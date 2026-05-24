@@ -1,0 +1,62 @@
+{
+  "name": "queryforge-mcp",
+  "version": "0.1.0",
+  "description": "Local MCP server for analyzing EF/EF Core/LINQ/Dapper queries in .NET projects — conservative rewrite plans without SQL execution or file writes.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "queryforge-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "docs"
+  ],
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsup",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "entity-framework",
+    "ef-core",
+    "linq",
+    "dapper",
+    "dotnet",
+    "query-optimization",
+    "queryforge"
+  ],
+  "author": "Luis Mauro Penholato",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/luismpenholato/queryforge-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/luismpenholato/queryforge-mcp/issues"
+  },
+  "homepage": "https://github.com/luismpenholato/queryforge-mcp#readme",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "fast-glob": "^3.3.3",
+    "fast-xml-parser": "^5.2.5",
+    "zod": "^3.25.67"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.30",
+    "tsup": "^8.5.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.3"
+  }
+}
