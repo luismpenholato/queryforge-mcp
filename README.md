@@ -15,6 +15,7 @@ QueryForge analyzes C# query snippets and returns conservative suggestions for c
 | `analyze_query_batch` | Analyze multiple C# files/snippets and rank the riskiest ones |
 | `suggest_ef_rewrite` | Conservative EF Core rewrite advisor (safe auto-fixes + structured plan, no file changes) |
 | `suggest_dapper_alternative` | Suggest a conservative Dapper alternative for read-only queries |
+| `suggest_index_candidates` | Suggest conservative index candidates from query filters and ordering (not definitive indexes) |
 | `generate_review_report` | Generate a markdown review report with checklist |
 
 ## What it does not do
@@ -174,6 +175,38 @@ Highest severity: high
 
 Use batch analysis to prioritize which handlers, repositories or query snippets should be reviewed first. Files are scored by severity and high-impact smell bonuses (non-sargable filters, premature materialization, large ordered result sets).
 
+## Index candidate suggestions
+
+`suggest_index_candidates` analyzes `Where`, `OrderBy` and `ThenBy` patterns to propose **index candidates for manual review** — not definitive indexes.
+
+QueryForge:
+
+- Does **not** inspect the real database schema
+- Does **not** check existing indexes
+- Does **not** validate execution plans
+- May emit warnings when query smells (function-on-column, `ToString`, cartesian product, N+1) prevent effective index usage
+
+Example input:
+
+```json
+{
+  "code": "return await _context.Orders.Where(o => o.CustomerId == customerId && o.OrderedAt >= startDate).OrderByDescending(o => o.OrderedAt).ToListAsync();",
+  "databaseProvider": "sql-server",
+  "tableName": "Orders"
+}
+```
+
+Example output (candidate, not recommendation):
+
+```sql
+CREATE INDEX IX_Orders_CustomerId_OrderedAt
+ON Orders (CustomerId, OrderedAt DESC);
+```
+
+Every response includes **Manual review required** and a validation checklist (existing indexes, execution plan, selectivity, read/write trade-offs).
+
+Try `examples/index-candidate-query.cs` for a sargable query that generates a composite candidate.
+
 ## Runtime and provider support
 
 QueryForge does not execute SQL and does not connect to databases. Provider detection is based on pasted project metadata and package references.
@@ -295,6 +328,7 @@ The `examples/` folder defines canonical query samples. Each file has a matching
 | `client-side-method-query.cs` | Custom helpers inside `Where` predicates | `CLIENT_SIDE_METHOD_IN_WHERE` |
 | `string-search-query.cs` | Non-sargable text search patterns | `STRING_TRANSFORM_ON_COLUMN_FILTER`, `CONTAINS_ON_STRING_COLUMN`, `TO_STRING_IN_QUERY_FILTER`, `CONTAINS_ON_CONVERTED_VALUE` |
 | `structural-query-smells.cs` | N+1, cartesian product, correlated subquery, implicit conversion | `N_PLUS_ONE_QUERY_IN_LOOP`, `MULTIPLE_ROUND_TRIPS_IN_LOOP`, `CARTESIAN_PRODUCT_QUERY`, `CORRELATED_SUBQUERY_IN_PROJECTION`, `IMPLICIT_CONVERSION_IN_FILTER`, `DUPLICATED_PREDICATE`, `FULL_ENTITY_MATERIALIZATION` |
+| `index-candidate-query.cs` | Sargable filters + ordering for index candidate generation | Composite candidate with `CustomerId`, `Status`, `OrderedAt`, `Id` |
 
 Run `npm test` to validate all contracts. Use these samples when evaluating QueryForge output in Cursor or other MCP clients.
 
@@ -319,7 +353,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Pull requests run CI (`npm test` and `np
 
 ## Roadmap
 
-- **v0.6.0** — Dapper safety rules, expanded aggregation smells
+- **v0.7.0** — Dapper safety rules, expanded aggregation smells
 - **Future** — Optional Roslyn-based analysis, guarded `apply_patch`
 
 ## License
