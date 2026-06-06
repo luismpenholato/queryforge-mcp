@@ -7,7 +7,7 @@ import { registerGenerateReviewReportTool } from './tools/generate-review-report
 export function createServer(): McpServer {
   const server = new McpServer({
     name: 'queryforge-mcp',
-    version: '0.1.0'
+    version: '0.1.1'
   });
 
   registerAnalyzeQueryTool(server);
