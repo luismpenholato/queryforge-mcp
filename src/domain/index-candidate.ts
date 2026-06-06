@@ -13,4 +13,6 @@ export interface IndexCandidate {
   reasons: string[];
   warnings: string[];
   manualReviewRequired: boolean;
+  requiresQueryRewrite?: boolean;
+  rewriteRequiredReason?: string;
 }

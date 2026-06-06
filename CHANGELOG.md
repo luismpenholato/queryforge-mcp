@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2026-06-06
+
+### Fixed
+
+- Index candidate extraction no longer treats derived members (`Year`, `Month`, `ToString`, `ToLower`, etc.) as real table columns
+- Function-on-column queries now produce conditional candidates on base columns (e.g. `DataPedido DESC`) instead of invalid indexes like `IX_Pedidos_Year_DataPedido`
+- Non-sargable filter columns (e.g. `ToString().Contains`) are excluded from automatic composite index keys; they appear only in post-rewrite evaluation notes
+
+### Added
+
+- `requiresQueryRewrite` and `rewriteRequiredReason` fields on `IndexCandidate`
+- `postRewriteEvaluation` field on `IndexCandidateResult` with explicit SQL guidance for deferred composite keys
+- Safer warnings and formatter output for rewrite-dependent index candidates
+- Tests for derived-member exclusion, conditional candidates, and combined function-on-column + `ToString` filters
+
+### Changed
+
+- Summary text distinguishes conditional candidates requiring query rewrite from direct candidates
+- Summary and formatter messaging tier candidates: primary index after date/range rewrite, optional composite only after per-column filter rewrite
+- Global warnings reinforce that creating indexes before rewrite is usually maintenance cost without gain, and that `INCLUDE` covering indexes remain a manual advanced decision
+
 ## [0.6.0] - 2026-06-06
 
 ### Added
@@ -165,6 +186,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation: README, examples, query smells, limitations, production usage, contributing
 - Test suite (unit + integration) with .NET fixtures
 
+[0.6.1]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.6.1
 [0.6.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.6.0
 [0.5.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.5.0
 [0.4.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.4.0

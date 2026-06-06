@@ -74,8 +74,12 @@ describe('EfRewriteService', () => {
     expect(result).toContain('FUNCTION_ON_COLUMN_FILTER');
     expect(result).toContain('Suggested rewrite plan:');
     expect(result).toContain('Conceptual example for DateTime.Year/Month:');
-    expect(result).toContain('o.OrderedAt.Year == currentYear');
-    expect(result).not.toContain('o.OrderedAt >= startDate');
+    expect(result).toContain('new DateTime(currentYear, 1, 1, 0, 0, 0, DateTimeKind.Utc)');
+    expect(result).toContain('query.Where(o => o.OrderedAt >= startDate && o.OrderedAt < endDate)');
+
+    const rewrittenCode = result.split('*/').pop() ?? '';
+    expect(rewrittenCode).toContain('o.OrderedAt.Year == currentYear');
+    expect(rewrittenCode).not.toContain('o.OrderedAt >= startDate');
   });
 
   it('should warn that ToString and Contains-on-converted filters have no safe auto-fix', () => {
@@ -94,6 +98,14 @@ describe('EfRewriteService', () => {
     expect(result).toContain('Why automatic rewrite was not fully applied:');
     expect(result).toContain('Note on ToString/Contains filters:');
     expect(result).toContain('o.TotalAmount.ToString().Contains("3")');
+    expect(result).toContain('var items = await query');
+    expect(result).toContain('.ToListAsync(ct);');
+    expect(result).toContain('return items');
+    expect(result).toContain('.Where(x => /* business rule not translatable to SQL */)');
+    expect(result).not.toContain('ContinueWith');
+    expect(result).toContain(
+      'Only do this after a selective indexed filter significantly reduces the result set.'
+    );
   });
 
   it('should apply partial rewrite with AsNoTracking and plan for non-sargable filters', () => {
@@ -112,8 +124,131 @@ describe('EfRewriteService', () => {
     expect(result).toContain('CONTAINS_ON_CONVERTED_VALUE');
     expect(result).toContain('LARGE_TAKE_WITH_ORDER_BY');
     expect(result).toContain('Suggested rewrite plan:');
-    expect(result).toContain('Conceptual example for DateTime.Year/Month:');
-    expect(result).toContain('o.OrderedAt.Year == currentYear');
-    expect(result).toContain('o.TotalAmount.ToString()!.Contains');
+    expect(result).toContain('Conceptual rewrite example (not auto-applied):');
+    expect(result).toContain('var items = await _context.Orders');
+    expect(result).toContain('new DateTime(currentYear, 1, 1, 0, 0, 0, DateTimeKind.Utc)');
+    expect(result).toContain('o.OrderedAt >= startDate && o.OrderedAt < endDate');
+    expect(result).toContain('return items');
+    expect(result).toContain('System.Globalization.CultureInfo.InvariantCulture');
+    expect(result).toContain('.Where(o =>');
+    expect(result).toContain('o.TotalAmount');
+    expect(result).toContain('.ToString(System.Globalization.CultureInfo.InvariantCulture)');
+    expect(result).toContain(".Contains('3')");
+    expect(result).not.toContain('ContinueWith');
+    expect(result).not.toContain('Conceptual example for selective in-memory filter');
+    expect(result).toContain('Note on Take SQL translation:');
+    expect(result).toContain('TOP or OFFSET/FETCH depending on provider and version');
+    expect(result).toContain(
+      'Only do this after a selective indexed filter significantly reduces the result set.'
+    );
+    expect(result).toContain('Note on Take before in-memory filter:');
+    expect(result).toContain('applying Take before the in-memory filter does not change the business rule');
+    expect(result).toContain('validate semantics before production');
+  });
+
+  it('should never emit ContinueWith even when input code contains it', () => {
+    const code = `
+      return await _context.Orders
+        .Where(o => o.TotalAmount.ToString().Contains("3"))
+        .ToListAsync(ct)
+        .ContinueWith(t => t.Result.Where(o => o.TotalAmount > 0).ToList(), ct);
+    `;
+
+    const analysis = analysisService.analyze({ provider: 'ef-core', code });
+    const result = rewriteService.suggest(code, analysis);
+
+    expect(result).not.toContain('ContinueWith');
+    expect(result).toContain('var items = await');
+  });
+
+  it('should format integrated rewrite example for repository-based queries', () => {
+    const code = `
+      var pedidos = await unitOfWork.PedidoRepository.Query()
+        .Where(p => p.DataPedido.Year == currentYear && p.ValorTotal.ToString().Contains("3"))
+        .OrderByDescending(p => p.DataPedido)
+        .Take(30_000)
+        .ToListAsync(ct);
+      return pedidos;
+    `;
+
+    const analysis = analysisService.analyze({ provider: 'ef-core', code });
+    const result = rewriteService.suggest(code, analysis);
+
+    expect(result).not.toContain('ContinueWith');
+    expect(result).toContain('var items = await unitOfWork.PedidoRepository.Query()');
+    expect(result).toContain('new DateTime(currentYear, 1, 1, 0, 0, 0, DateTimeKind.Utc)');
+    expect(result).toContain('p.DataPedido >= startDate && p.DataPedido < endDate');
+    expect(result).toContain('return items');
+    expect(result).toContain('.Where(p =>');
+    expect(result).toContain('p.ValorTotal');
+    expect(result).toContain('.ToString(System.Globalization.CultureInfo.InvariantCulture)');
+    expect(result).toContain('.Contains("3")');
+
+    const conceptualPlan = result.split('*/')[0];
+    expect(conceptualPlan).not.toMatch(/(?<!System\.Globalization\.)CultureInfo\.InvariantCulture/);
+    expect(conceptualPlan).toContain('Note on Take before in-memory filter:');
+    expect(conceptualPlan).toContain('the returned volume does not pressure memory or latency');
+  });
+
+  it('should use UTC boundaries when year filter references DateTime.UtcNow.Year', () => {
+    const code = `
+      return await _context.Orders
+        .Where(o => o.OrderedAt.Year == DateTime.UtcNow.Year)
+        .ToListAsync();
+    `;
+
+    const analysis = analysisService.analyze({ provider: 'ef-core', code });
+    const result = rewriteService.suggest(code, analysis);
+
+    expect(result).toContain('var year = DateTime.UtcNow.Year;');
+    expect(result).toContain('new DateTime(year, 1, 1, 0, 0, 0, DateTimeKind.Utc);');
+    expect(result).not.toContain('ContinueWith');
+  });
+
+  it('should never emit unqualified ToString(CultureInfo.InvariantCulture) in conceptual plan', () => {
+    const code = `
+      return await unitOfWork.PedidoRepository.Query()
+        .Where(p =>
+            p.DataPedido.Year == anoAtual &&
+            new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }.Contains(p.DataPedido.Month) &&
+            p.ValorTotal.ToString()!.Contains('3'))
+        .OrderByDescending(p => p.DataPedido)
+        .Take(30_000)
+        .ToListAsync(ct);
+    `;
+
+    const analysis = analysisService.analyze({ provider: 'ef-core', code });
+    const result = rewriteService.suggest(code, analysis);
+    const conceptualPlan = result.split('*/')[0];
+
+    expect(result).not.toContain('ToString(CultureInfo.InvariantCulture)');
+    expect(conceptualPlan).toContain('System.Globalization.CultureInfo.InvariantCulture');
+    expect(conceptualPlan).toContain('p.ValorTotal');
+    expect(conceptualPlan).toContain('.ToString(System.Globalization.CultureInfo.InvariantCulture)');
+    expect(conceptualPlan).not.toMatch(/(?<!System\.Globalization\.)CultureInfo\.InvariantCulture/);
+    expect(conceptualPlan).toContain('Note on Take before in-memory filter:');
+  });
+
+  it('should qualify CultureInfo.InvariantCulture in conceptual examples', () => {
+    const code = `
+      return await _context.Orders
+        .Where(o =>
+          o.OrderedAt.Year == currentYear &&
+          o.TotalAmount.ToString(CultureInfo.InvariantCulture).Contains("3"))
+        .OrderByDescending(o => o.OrderedAt)
+        .ToListAsync(ct);
+    `;
+
+    const analysis = analysisService.analyze({ provider: 'ef-core', code });
+    const result = rewriteService.suggest(code, analysis);
+
+    const conceptualPlan = result.split('*/')[0];
+
+    expect(conceptualPlan).toContain('System.Globalization.CultureInfo.InvariantCulture');
+    expect(conceptualPlan).toContain('.ToString(System.Globalization.CultureInfo.InvariantCulture)');
+    expect(conceptualPlan).toContain('.Contains("3")');
+    expect(result).not.toContain('ToString(CultureInfo.InvariantCulture)');
+    expect(conceptualPlan).not.toMatch(/(?<!System\.Globalization\.)CultureInfo\.InvariantCulture/);
+    expect(result).not.toContain('ContinueWith');
   });
 });

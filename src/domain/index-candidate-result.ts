@@ -9,4 +9,6 @@ export interface IndexCandidateResult {
   warnings: string[];
   analysisSmells: string[];
   manualReviewRequired: boolean;
+  postRewriteEvaluation?: string[];
+  notRecommendedNotes?: string[];
 }
