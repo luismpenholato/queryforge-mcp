@@ -28,7 +28,52 @@ QueryForge analyzes C# query snippets and returns conservative suggestions for c
 
 Validate every suggestion with generated SQL, tests, and real data when possible.
 
-## Install
+## Install from npm
+
+```bash
+npx -y @luispenholato/queryforge-mcp
+```
+
+Or install globally:
+
+```bash
+npm install -g @luispenholato/queryforge-mcp
+queryforge-mcp
+```
+
+## Cursor MCP config
+
+```json
+{
+  "mcpServers": {
+    "queryforge": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@luispenholato/queryforge-mcp"
+      ]
+    }
+  }
+}
+```
+
+Pinned version:
+
+```json
+{
+  "mcpServers": {
+    "queryforge": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@luispenholato/queryforge-mcp@0.6.1"
+      ]
+    }
+  }
+}
+```
+
+## Install from source
 
 ```bash
 git clone https://github.com/luismpenholato/queryforge-mcp.git

@@ -1,34 +1,49 @@
 {
-  "name": "queryforge-mcp",
+  "name": "@luispenholato/queryforge-mcp",
   "version": "0.6.1",
-  "description": "Local-first MCP server for reviewing .NET EF Core, LINQ and Dapper query performance.",
+  "description": "Local-first MCP server for reviewing .NET LINQ, EF Core and Dapper query performance.",
   "type": "module",
   "bin": {
     "queryforge-mcp": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "dev": "tsx src/index.ts",
-    "build": "tsc",
+    "build": "tsc && node scripts/ensure-shebang.js",
     "start": "node dist/index.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepublishOnly": "npm test && npm run build"
   },
   "keywords": [
     "mcp",
     "model-context-protocol",
     "dotnet",
     "ef-core",
+    "entity-framework",
     "linq",
     "dapper",
-    "query-optimization"
+    "query-optimization",
+    "performance",
+    "typescript",
+    "cursor"
   ],
-  "author": "Luis Mauro Penholato",
-  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/luismpenholato/queryforge-mcp.git"
+    "url": "git+https://github.com/luismpenholato/queryforge-mcp.git"
   },
+  "bugs": {
+    "url": "https://github.com/luismpenholato/queryforge-mcp/issues"
+  },
+  "homepage": "https://github.com/luismpenholato/queryforge-mcp#readme",
+  "author": "Luis Mauro Penholato <luispenholato@gmail.com>",
+  "license": "MIT",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
