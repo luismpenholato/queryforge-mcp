@@ -1,17 +1,16 @@
 #!/usr/bin/env node
-import { startServer } from "./mcp/server.js";
 
-process.on("uncaughtException", (error) => {
-  console.error("[queryforge-mcp] Uncaught exception:", error);
-  process.exit(1);
-});
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { createServer } from './server.js';
 
-process.on("unhandledRejection", (reason) => {
-  console.error("[queryforge-mcp] Unhandled rejection:", reason);
-  process.exit(1);
-});
+async function main(): Promise<void> {
+  const server = createServer();
+  const transport = new StdioServerTransport();
 
-startServer().catch((error) => {
-  console.error("[queryforge-mcp] Failed to start:", error);
+  await server.connect(transport);
+}
+
+main().catch((error) => {
+  console.error('QueryForge MCP failed to start.', error);
   process.exit(1);
 });
