@@ -12,7 +12,7 @@ QueryForge analyzes C# query snippets and returns conservative suggestions for c
 | --- | --- |
 | `inspect_project_stack` | Detect .NET runtime, EF/Dapper usage, and database providers from pasted `.csproj` content |
 | `analyze_query` | Detect performance smells and return a summary with severity |
-| `suggest_ef_rewrite` | Suggest a safer EF Core rewrite (no file changes) |
+| `suggest_ef_rewrite` | Conservative EF Core rewrite advisor (safe auto-fixes + structured plan, no file changes) |
 | `suggest_dapper_alternative` | Suggest a conservative Dapper alternative for read-only queries |
 | `generate_review_report` | Generate a markdown review report with checklist |
 
@@ -109,6 +109,18 @@ public async Task<List<ProductSummaryDto>> GetProductsAsync()
         .ToList();
 }
 ```
+
+**EF rewrite advisor:**
+
+> Use `suggest_ef_rewrite` on the same query.
+
+`suggest_ef_rewrite` is conservative by design:
+
+- **Safe fixes** — may auto-apply `AsNoTracking()` for read-only queries and `Count` → `Any`/`AnyAsync` for existence checks.
+- **Partial rewrite** — when safe fixes apply alongside non-sargable smells, the code is updated only where safe and a manual review list is included.
+- **No automatic rewrite** — for smells like `FUNCTION_ON_COLUMN_FILTER`, `TO_STRING_IN_QUERY_FILTER`, or `CONTAINS_ON_CONVERTED_VALUE`, QueryForge returns a structured plan and conceptual examples (e.g. DateTime range filters) instead of rewriting risky predicates.
+
+QueryForge does not invent business rules or guarantee exact generated SQL shape.
 
 **Full report:**
 
