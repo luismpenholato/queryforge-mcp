@@ -1,1 +1,1 @@
-export type QueryProvider = 'ef-core' | 'linq' | 'dapper' | 'unknown';
+export type QueryProvider = 'ef-core' | 'ef6' | 'linq' | 'dapper' | 'unknown';
