@@ -10,6 +10,7 @@ QueryForge analyzes C# query snippets and returns conservative suggestions for c
 
 | Tool | Description |
 |------|-------------|
+| `inspect_project_stack` | Detect .NET runtime, EF/Dapper usage, and database providers from pasted `.csproj` content |
 | `analyze_query` | Detect performance smells and return a summary with severity |
 | `suggest_ef_rewrite` | Suggest a safer EF Core rewrite (no file changes) |
 | `suggest_dapper_alternative` | Suggest a conservative Dapper alternative for read-only queries |
@@ -113,6 +114,41 @@ public async Task<List<ProductSummaryDto>> GetProductsAsync()
 
 > Use `generate_review_report` on this query with context "read-only API endpoint".
 
+**Example prompt for stack inspection:**
+
+> Use `inspect_project_stack` with the pasted content of my `.csproj` file.
+
+## Runtime and provider support
+
+QueryForge does not execute SQL and does not connect to databases. Provider detection is based on pasted project metadata and package references.
+
+**Supported by heuristic analysis:**
+
+- .NET Framework 4.x
+- .NET Core 2.x / 3.x
+- .NET 5+
+- .NET 6 / 7 / 8 / 9 / 10
+
+**Query technologies:**
+
+- LINQ
+- Entity Framework Core
+- Entity Framework 6 (partial)
+- Dapper
+
+**Database providers:**
+
+- SQL Server
+- MySQL
+- MariaDB
+- PostgreSQL
+- SQLite
+- Oracle
+- Cosmos DB
+- MongoDB
+- In-Memory
+- Unknown/custom providers
+
 ## Rules
 
 Current heuristic rules (regex-based, conservative):
@@ -143,7 +179,6 @@ Use fictional English domain names only (`Product`, `Category`, `Order`, `Custom
 
 ## Roadmap
 
-- **v0.2.0** — `inspect_project_stack` from pasted `.csproj` content, provider detection, richer reports
 - **v0.3.0** — `.cs` file scanner, diff generation, optional `apply_patch` with confirmation
 
 ## License

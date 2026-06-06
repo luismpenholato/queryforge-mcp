@@ -1,6 +1,6 @@
 {
   "name": "queryforge-mcp",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Local-first MCP server for reviewing .NET EF Core, LINQ and Dapper query performance.",
   "type": "module",
   "bin": {

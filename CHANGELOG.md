@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-06-06
+
+### Added
+
+- `inspect_project_stack` MCP tool for pasted `.csproj` content (no disk reads)
+- `ProjectStackService` with heuristic detection of target frameworks, runtime family, query providers, and database providers
+- Domain types: `DotNetRuntime`, `DatabaseProvider`, `ProjectStackInspectionRequest`, `ProjectStackInspectionResult`
+- Extended `QueryProvider` with `ef6`
+- Unit tests for stack inspection across .NET Framework, .NET Core, and .NET 5–10 scenarios
+
+### Changed
+
+- README documents runtime/provider support matrix and the new tool
+
 ## [0.1.1] - 2026-06-06
 
 ### Added
@@ -43,5 +57,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation: README, examples, query smells, limitations, production usage, contributing
 - Test suite (unit + integration) with .NET fixtures
 
+[0.2.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.2.0
 [0.1.1]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.1.1
 [0.1.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.1.0
