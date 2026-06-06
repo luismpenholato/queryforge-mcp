@@ -6,10 +6,10 @@ Local-first MCP server for reviewing .NET EF Core, LINQ and Dapper query perform
 
 QueryForge analyzes C# query snippets and returns conservative suggestions for common performance smells. It is designed for development and code review — not automatic refactoring.
 
-**Tools:**
+### Tools
 
 | Tool | Description |
-|------|-------------|
+| --- | --- |
 | `inspect_project_stack` | Detect .NET runtime, EF/Dapper usage, and database providers from pasted `.csproj` content |
 | `analyze_query` | Detect performance smells and return a summary with severity |
 | `suggest_ef_rewrite` | Suggest a safer EF Core rewrite (no file changes) |
@@ -49,7 +49,7 @@ npm start
 
 ## Cursor configuration
 
-Build first, then add to `.cursor/mcp.json` or Cursor MCP settings:
+Build first, then add to `.cursor/mcp.json` or Cursor MCP settings.
 
 **Windows:**
 
@@ -110,11 +110,11 @@ public async Task<List<ProductSummaryDto>> GetProductsAsync()
 }
 ```
 
-**Example prompt for a full report:**
+**Full report:**
 
 > Use `generate_review_report` on this query with context "read-only API endpoint".
 
-**Example prompt for stack inspection:**
+**Stack inspection:**
 
 > Use `inspect_project_stack` with the pasted content of my `.csproj` file.
 
@@ -154,7 +154,7 @@ QueryForge does not execute SQL and does not connect to databases. Provider dete
 Current heuristic rules (regex-based, conservative):
 
 | Code | Severity | Description |
-|------|----------|-------------|
+| --- | --- | --- |
 | `TO_LIST_BEFORE_SELECT` | high | Materialization before projection |
 | `MISSING_AS_NO_TRACKING` | medium | Read-only query without `AsNoTracking` |
 | `COUNT_GREATER_THAN_ZERO` | medium | Using `Count` instead of `Any` for existence check |
@@ -164,7 +164,7 @@ Current heuristic rules (regex-based, conservative):
 
 ## Architecture
 
-```
+```text
 src/
 ├── domain/       # Types and contracts
 ├── application/  # Services (analysis, rewrite, report)
@@ -176,6 +176,10 @@ src/
 ## Examples in tests and docs
 
 Use fictional English domain names only (`Product`, `Category`, `Order`, `Customer`, `Invoice`, `BlogPost`, `Author`, `Book`, `Review`, `Store`). Avoid company-specific or Portuguese domain names in examples.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Pull requests run CI (`npm test` and `npm run build`).
 
 ## Roadmap
 

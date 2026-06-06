@@ -8,7 +8,7 @@ import { registerInspectProjectStackTool } from './tools/inspect-project-stack.t
 export function createServer(): McpServer {
   const server = new McpServer({
     name: 'queryforge-mcp',
-    version: '0.2.0'
+    version: '0.2.1'
   });
 
   registerAnalyzeQueryTool(server);
