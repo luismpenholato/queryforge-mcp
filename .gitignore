@@ -1,11 +1,5 @@
-node_modules/
-dist/
-coverage/
+node_modules
+dist
 .env
-*.log
-bin/
-obj/
-.env.*
 .DS_Store
-Thumbs.db
-*.tsbuildinfo
+*.log
