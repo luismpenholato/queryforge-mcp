@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-06-06
+
+### Added
+
+- `analyze_query_batch` MCP tool for analyzing multiple C# query files/snippets in one call
+- `QueryBatchAnalysisService` with per-file risk scoring and top-5 risky file ranking
+- Domain types: `QueryFileInput`, `BatchAnalysisRequest`, `BatchAnalysisResult`, `FileAnalysisResult`
+- `formatBatchAnalysisAsMarkdown` formatter with review order guidance
+- Tests for batch analysis service and markdown formatter
+
+### Notes
+
+- QueryForge still does not read files from disk; the MCP client must provide file paths and contents
+
 ## [0.3.2] - 2026-06-06
 
 ### Added
@@ -114,6 +128,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation: README, examples, query smells, limitations, production usage, contributing
 - Test suite (unit + integration) with .NET fixtures
 
+[0.4.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.4.0
 [0.3.2]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.3.2
 [0.3.1]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.3.1
 [0.3.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.3.0

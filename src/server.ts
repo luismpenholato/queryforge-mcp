@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerAnalyzeQueryTool } from './tools/analyze-query.tool.js';
+import { registerAnalyzeQueryBatchTool } from './tools/analyze-query-batch.tool.js';
 import { registerSuggestEfRewriteTool } from './tools/suggest-ef-rewrite.tool.js';
 import { registerSuggestDapperAlternativeTool } from './tools/suggest-dapper-alternative.tool.js';
 import { registerGenerateReviewReportTool } from './tools/generate-review-report.tool.js';
@@ -8,14 +9,15 @@ import { registerInspectProjectStackTool } from './tools/inspect-project-stack.t
 export function createServer(): McpServer {
   const server = new McpServer({
     name: 'queryforge-mcp',
-    version: '0.3.2'
+    version: '0.4.0'
   });
 
+  registerInspectProjectStackTool(server);
   registerAnalyzeQueryTool(server);
+  registerAnalyzeQueryBatchTool(server);
   registerSuggestEfRewriteTool(server);
   registerSuggestDapperAlternativeTool(server);
   registerGenerateReviewReportTool(server);
-  registerInspectProjectStackTool(server);
 
   return server;
 }

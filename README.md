@@ -12,6 +12,7 @@ QueryForge analyzes C# query snippets and returns conservative suggestions for c
 | --- | --- |
 | `inspect_project_stack` | Detect .NET runtime, EF/Dapper usage, and database providers from pasted `.csproj` content |
 | `analyze_query` | Detect performance smells and return a summary with severity |
+| `analyze_query_batch` | Analyze multiple C# files/snippets and rank the riskiest ones |
 | `suggest_ef_rewrite` | Conservative EF Core rewrite advisor (safe auto-fixes + structured plan, no file changes) |
 | `suggest_dapper_alternative` | Suggest a conservative Dapper alternative for read-only queries |
 | `generate_review_report` | Generate a markdown review report with checklist |
@@ -129,6 +130,49 @@ QueryForge does not invent business rules or guarantee exact generated SQL shape
 **Stack inspection:**
 
 > Use `inspect_project_stack` with the pasted content of my `.csproj` file.
+
+## Batch analysis
+
+`analyze_query_batch` lets you analyze multiple C# files or snippets at once and rank the riskiest ones for review.
+
+QueryForge does **not** read files from disk. The MCP client must provide the file path and content.
+
+Example input:
+
+```json
+{
+  "files": [
+    {
+      "path": "Features/Orders/GetOrdersHandler.cs",
+      "content": "return await _context.Orders.Where(o => o.OrderedAt.Year == currentYear).ToListAsync();"
+    },
+    {
+      "path": "Features/Products/GetProductsHandler.cs",
+      "content": "return await _context.Products.AsNoTracking().Take(100).ToListAsync();"
+    }
+  ],
+  "provider": "ef-core"
+}
+```
+
+Example output:
+
+```text
+# QueryForge Batch Analysis
+
+Files analyzed: 2
+Files with issues: 1
+Highest severity: high
+
+## Top risky files
+
+### 1. Features/Orders/GetOrdersHandler.cs
+- Severity: high
+- Score: 11
+- High impact smells: FUNCTION_ON_COLUMN_FILTER
+```
+
+Use batch analysis to prioritize which handlers, repositories or query snippets should be reviewed first. Files are scored by severity and high-impact smell bonuses (non-sargable filters, premature materialization, large ordered result sets).
 
 ## Runtime and provider support
 
@@ -258,8 +302,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Pull requests run CI (`npm test` and `np
 
 ## Roadmap
 
-- **v0.4.0** — Additional example contracts, Dapper safety rules, expanded aggregation smells
-- **Future** — Optional Roslyn-based analysis, project scanner, guarded `apply_patch`
+- **v0.5.0** — Dapper safety rules, expanded aggregation smells, optional disk-less project scan via client-provided files
+- **Future** — Optional Roslyn-based analysis, guarded `apply_patch`
 
 ## License
 
