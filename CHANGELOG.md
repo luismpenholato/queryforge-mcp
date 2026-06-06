@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-06-06
+
+### Added
+
+- Fifteen advanced LINQ/EF performance rules focused on sargability, materialization, pagination, ordering, projection and redundant filters
+- Extended `QuerySmell` contract with optional `category`, `whyItMatters`, `rewritePlan` and `safeAutoFix` fields
+- `examples/advanced-linq-query.cs` canonical sample with matching integration test
+- Unit tests for every new rule (detect + safe negative case)
+- `critical` severity level in domain types and analysis aggregation
+
+### Changed
+
+- `analyze_query` markdown output now includes category, rationale, rewrite plan and auto-fix safety when available
+- README documents advanced rule groups and conservative analysis scope
+- Server and package version bumped to `0.3.0`
+
 ## [0.2.1] - 2026-06-06
 
 ### Added
@@ -68,6 +84,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation: README, examples, query smells, limitations, production usage, contributing
 - Test suite (unit + integration) with .NET fixtures
 
+[0.3.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.3.0
 [0.2.1]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.2.1
 [0.2.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.2.0
 [0.1.1]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.1.1

@@ -7,4 +7,8 @@ export interface QuerySmell {
   message: string;
   suggestion: string;
   confidence: number;
+  category?: string;
+  whyItMatters?: string;
+  rewritePlan?: string[];
+  safeAutoFix?: boolean;
 }

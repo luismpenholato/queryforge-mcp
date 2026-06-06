@@ -14,11 +14,14 @@ export class QueryAnalysisService {
       severity,
       smells,
       recommendations: smells.map((item) => item.suggestion),
-      manualReviewRequired: smells.some((item) => item.severity === 'high' || item.confidence < 0.75)
+      manualReviewRequired: smells.some(
+        (item) => item.severity === 'critical' || item.severity === 'high' || item.confidence < 0.75
+      )
     };
   }
 
   private resolveSeverity(severities: Severity[]): Severity {
+    if (severities.includes('critical')) return 'critical';
     if (severities.includes('high')) return 'high';
     if (severities.includes('medium')) return 'medium';
     if (severities.includes('low')) return 'low';
