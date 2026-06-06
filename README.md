@@ -215,7 +215,8 @@ The `examples/` folder defines canonical query samples. Each file has a matching
 | Example | Scenario | Expected smells |
 | --- | --- | --- |
 | `bad-ef-query.cs` | Include + early `ToList` before projection | `TO_LIST_BEFORE_SELECT`, `UNNECESSARY_INCLUDE_WITH_PROJECTION`, `MISSING_AS_NO_TRACKING` |
-| `advanced-linq-query.cs` | Mixed sargability, pagination and tracking issues | `FUNCTION_ON_COLUMN_FILTER`, `TO_STRING_IN_QUERY_FILTER`, `CONTAINS_ON_CONVERTED_VALUE`, `STRING_TRANSFORM_ON_COLUMN_FILTER`, `CONTAINS_ON_STRING_COLUMN`, `REDUNDANT_MONTH_RANGE_FILTER`, `LARGE_TAKE`, `LARGE_TAKE_WITH_ORDER_BY`, `MISSING_AS_NO_TRACKING` |
+| `advanced-linq-query.cs` | Mixed sargability, pagination and tracking issues (multiple `Where` calls) | `FUNCTION_ON_COLUMN_FILTER`, `TO_STRING_IN_QUERY_FILTER`, `CONTAINS_ON_CONVERTED_VALUE`, `STRING_TRANSFORM_ON_COLUMN_FILTER`, `CONTAINS_ON_STRING_COLUMN`, `REDUNDANT_MONTH_RANGE_FILTER`, `LARGE_TAKE`, `LARGE_TAKE_WITH_ORDER_BY`, `MISSING_AS_NO_TRACKING` |
+| `function-on-column-query.cs` | Single multiline `Where` with `.Year`, `.Month` and `ToString().Contains` | `FUNCTION_ON_COLUMN_FILTER`, `TO_STRING_IN_QUERY_FILTER`, `CONTAINS_ON_CONVERTED_VALUE`, `REDUNDANT_MONTH_RANGE_FILTER`, `LARGE_TAKE`, `LARGE_TAKE_WITH_ORDER_BY`, `MISSING_AS_NO_TRACKING` |
 | `materialization-before-filter.cs` | Full table load then filter/sort/page in memory | `TO_LIST_BEFORE_WHERE`, `TO_LIST_BEFORE_ORDER_BY`, `TO_LIST_BEFORE_SKIP_TAKE`, `TO_LIST_BEFORE_SELECT` |
 | `pagination-heavy-query.cs` | Unstable ordering and large export batch | `MULTIPLE_ORDER_BY`, `LARGE_TAKE`, `LARGE_TAKE_WITH_ORDER_BY` |
 | `multiple-includes-query.cs` | Cartesian-prone includes with DTO projection | `MULTIPLE_COLLECTION_INCLUDES`, `UNNECESSARY_INCLUDE_WITH_PROJECTION`, `MISSING_AS_NO_TRACKING` |

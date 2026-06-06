@@ -22,19 +22,42 @@ export function looksLikeEfQuery(code: string): boolean {
   return /_context\.|DbContext|\.Set<|\.Where\s*\(|\.Select\s*\(|\.Include\s*\(/.test(code);
 }
 
+export function extractWhereBodies(code: string): string[] {
+  const bodies: string[] = [];
+  const wherePattern = /\.Where\s*\(/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = wherePattern.exec(code)) !== null) {
+    const start = match.index + match[0].length;
+    let depth = 1;
+    let index = start;
+
+    while (index < code.length && depth > 0) {
+      const char = code[index];
+
+      if (char === '(') {
+        depth += 1;
+      } else if (char === ')') {
+        depth -= 1;
+      }
+
+      index += 1;
+    }
+
+    bodies.push(code.slice(start, index - 1));
+  }
+
+  return bodies;
+}
+
 export function hasWhereClause(code: string, pattern: RegExp): boolean {
-  if (!/\.Where\s*\(/.test(code)) {
+  const bodies = extractWhereBodies(code);
+
+  if (bodies.length === 0) {
     return false;
   }
 
-  const whereIndexes = [...code.matchAll(/\.Where\s*\(/g)].map((match) => match.index ?? -1);
-  const patternMatch = code.match(pattern);
-
-  if (!patternMatch || patternMatch.index === undefined) {
-    return false;
-  }
-
-  return whereIndexes.some((whereIndex) => whereIndex >= 0 && whereIndex < patternMatch.index!);
+  return bodies.some((body) => pattern.test(body));
 }
 
 export function parseTakeValue(code: string): number | null {
@@ -85,34 +108,6 @@ const CLIENT_SIDE_METHOD_ALLOWLIST = new Set([
   'EF',
   'DbFunctions'
 ]);
-
-function extractWhereBodies(code: string): string[] {
-  const bodies: string[] = [];
-  const wherePattern = /\.Where\s*\(/g;
-  let match: RegExpExecArray | null;
-
-  while ((match = wherePattern.exec(code)) !== null) {
-    const start = match.index + match[0].length;
-    let depth = 1;
-    let index = start;
-
-    while (index < code.length && depth > 0) {
-      const char = code[index];
-
-      if (char === '(') {
-        depth += 1;
-      } else if (char === ')') {
-        depth -= 1;
-      }
-
-      index += 1;
-    }
-
-    bodies.push(code.slice(start, index - 1));
-  }
-
-  return bodies;
-}
 
 export function hasCustomMethodInWhere(code: string): boolean {
   for (const whereBody of extractWhereBodies(code)) {

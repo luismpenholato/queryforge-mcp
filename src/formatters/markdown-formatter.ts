@@ -13,6 +13,16 @@ export function formatAnalysisAsMarkdown(result: QueryAnalysisResult): string {
     return lines.join('\n');
   }
 
+  const nonSargableSmells = result.smells.filter((smell) => smell.category === 'sargability');
+
+  if (nonSargableSmells.length > 0) {
+    lines.push('Filtros possivelmente não sargáveis (non-sargable):');
+    for (const smell of nonSargableSmells) {
+      lines.push(`  - [${smell.severity}] ${smell.code}`);
+    }
+    lines.push('');
+  }
+
   for (const smell of result.smells) {
     lines.push(`- [${smell.severity}] ${smell.code}: ${smell.title}`);
     if (smell.category) {

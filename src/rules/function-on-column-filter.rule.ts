@@ -1,13 +1,14 @@
 import { QueryRule } from '../domain/query-rule.js';
 import { createSmell, hasWhereClause } from './rule-helpers.js';
 
-const DATE_MEMBER_PATTERN = /\.(Year|Month|Day|Date|Hour|Minute|Second)\b/;
+const DATE_MEMBER_ON_COLUMN_PATTERN =
+  /[a-zA-Z_]\w*\.\w+\.(Year|Month|Day|Date|Hour|Minute|Second)\b/;
 
 export const functionOnColumnFilterRule: QueryRule = {
   code: 'FUNCTION_ON_COLUMN_FILTER',
 
   analyze(request) {
-    if (!hasWhereClause(request.code, DATE_MEMBER_PATTERN)) {
+    if (!hasWhereClause(request.code, DATE_MEMBER_ON_COLUMN_PATTERN)) {
       return [];
     }
 
