@@ -20,6 +20,13 @@ import { largeTakeWithOrderByRule } from './large-take-with-order-by.rule.js';
 import { multipleOrderByRule } from './multiple-order-by.rule.js';
 import { multipleCollectionIncludesRule } from './multiple-collection-includes.rule.js';
 import { redundantMonthRangeFilterRule } from './redundant-month-range-filter.rule.js';
+import { nPlusOneQueryInLoopRule } from './n-plus-one-query-in-loop.rule.js';
+import { multipleRoundTripsInLoopRule } from './multiple-round-trips-in-loop.rule.js';
+import { cartesianProductQueryRule } from './cartesian-product-query.rule.js';
+import { correlatedSubqueryInProjectionRule } from './correlated-subquery-in-projection.rule.js';
+import { implicitConversionInFilterRule } from './implicit-conversion-in-filter.rule.js';
+import { duplicatedPredicateRule } from './duplicated-predicate.rule.js';
+import { fullEntityMaterializationRule } from './full-entity-materialization.rule.js';
 
 export const queryRules: QueryRule[] = [
   toListBeforeSelectRule,
@@ -42,5 +49,12 @@ export const queryRules: QueryRule[] = [
   largeTakeWithOrderByRule,
   multipleOrderByRule,
   multipleCollectionIncludesRule,
-  redundantMonthRangeFilterRule
+  redundantMonthRangeFilterRule,
+  nPlusOneQueryInLoopRule,
+  multipleRoundTripsInLoopRule,
+  cartesianProductQueryRule,
+  correlatedSubqueryInProjectionRule,
+  implicitConversionInFilterRule,
+  duplicatedPredicateRule,
+  fullEntityMaterializationRule
 ];

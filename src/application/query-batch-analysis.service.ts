@@ -24,7 +24,13 @@ const highImpactBonus: Record<string, number> = {
   TO_LIST_BEFORE_SKIP_TAKE: 3,
   LARGE_TAKE_WITH_ORDER_BY: 2,
   CLIENT_SIDE_METHOD_IN_WHERE: 2,
-  MULTIPLE_COLLECTION_INCLUDES: 2
+  MULTIPLE_COLLECTION_INCLUDES: 2,
+  N_PLUS_ONE_QUERY_IN_LOOP: 5,
+  MULTIPLE_ROUND_TRIPS_IN_LOOP: 5,
+  CARTESIAN_PRODUCT_QUERY: 5,
+  CORRELATED_SUBQUERY_IN_PROJECTION: 3,
+  IMPLICIT_CONVERSION_IN_FILTER: 4,
+  FULL_ENTITY_MATERIALIZATION: 2
 };
 
 export class QueryBatchAnalysisService {
@@ -94,12 +100,50 @@ export class QueryBatchAnalysisService {
   }
 
   private calculateScore(smells: QuerySmell[]): number {
-    return smells.reduce((total, smell) => {
+    const baseTotal = smells.reduce((total, smell) => {
       const baseScore = severityScore[smell.severity] ?? 0;
       const bonus = highImpactBonus[smell.code] ?? 0;
 
       return total + baseScore + bonus;
     }, 0);
+
+    return baseTotal + this.calculateComboBonus(smells);
+  }
+
+  private calculateComboBonus(smells: QuerySmell[]): number {
+    const codes = new Set(smells.map((smell) => smell.code));
+    let bonus = 0;
+
+    if (
+      codes.has('CARTESIAN_PRODUCT_QUERY') &&
+      codes.has('CORRELATED_SUBQUERY_IN_PROJECTION')
+    ) {
+      bonus += 8;
+    }
+
+    if (
+      codes.has('FUNCTION_ON_COLUMN_FILTER') &&
+      codes.has('CONTAINS_ON_CONVERTED_VALUE')
+    ) {
+      bonus += 6;
+    }
+
+    if (codes.has('AS_ENUMERABLE_BEFORE_QUERY_OPERATORS') && codes.has('LARGE_TAKE')) {
+      bonus += 5;
+    }
+
+    const highImpactCount = smells.filter(
+      (smell) =>
+        smell.severity === 'critical' ||
+        smell.severity === 'high' ||
+        highImpactBonus[smell.code] !== undefined
+    ).length;
+
+    if (highImpactCount >= 3) {
+      bonus += 5;
+    }
+
+    return bonus;
   }
 
   private resolveHighImpactSmells(smells: QuerySmell[]): string[] {

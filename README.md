@@ -75,7 +75,7 @@ Build first, then add to `.cursor/mcp.json` or Cursor MCP settings.
     "queryforge": {
       "command": "node",
       "args": [
-        "/home/luis/projetos/queryforge-mcp/dist/index.js"
+        "/home/admin/projects/queryforge-mcp/dist/index.js"
       ]
     }
   }
@@ -261,6 +261,22 @@ QueryForge uses conservative, regex-based heuristics. It detects **possible** is
 | Code | Severity | Description |
 | --- | --- | --- |
 | `REDUNDANT_MONTH_RANGE_FILTER` | low | `new[] {1..12}.Contains(x.Date.Month)` |
+| `DUPLICATED_PREDICATE` | low | Repeated condition inside the same `Where` |
+
+### Structural query smells
+
+Structural smells target query shape problems common in handlers, repositories and application services.
+
+| Code | Severity | Description |
+| --- | --- | --- |
+| `N_PLUS_ONE_QUERY_IN_LOOP` | high | EF/LINQ query executed inside `foreach`/`for`/`while` |
+| `MULTIPLE_ROUND_TRIPS_IN_LOOP` | high | Two or more queries inside the same loop body |
+| `CARTESIAN_PRODUCT_QUERY` | high | Multiple `from` clauses or chained `SelectMany` without explicit join |
+| `CORRELATED_SUBQUERY_IN_PROJECTION` | medium | `Count`/`Sum`/`Any`/`Average` correlated inside `Select` |
+| `IMPLICIT_CONVERSION_IN_FILTER` | high | `ToString`/`Parse`/`Convert` inside `Where` |
+| `FULL_ENTITY_MATERIALIZATION` | medium | `ToList`/`ToListAsync` without prior `Select` projection |
+
+`analyze_query_batch` uses these rules (with combo bonuses) to prioritize the riskiest files first — N+1 patterns, cartesian products and implicit conversions score higher than tracking-only issues.
 
 Each smell may include `category`, `whyItMatters`, `rewritePlan`, and `safeAutoFix` in the analysis output.
 
@@ -278,6 +294,7 @@ The `examples/` folder defines canonical query samples. Each file has a matching
 | `multiple-includes-query.cs` | Cartesian-prone includes with DTO projection | `MULTIPLE_COLLECTION_INCLUDES`, `UNNECESSARY_INCLUDE_WITH_PROJECTION`, `MISSING_AS_NO_TRACKING` |
 | `client-side-method-query.cs` | Custom helpers inside `Where` predicates | `CLIENT_SIDE_METHOD_IN_WHERE` |
 | `string-search-query.cs` | Non-sargable text search patterns | `STRING_TRANSFORM_ON_COLUMN_FILTER`, `CONTAINS_ON_STRING_COLUMN`, `TO_STRING_IN_QUERY_FILTER`, `CONTAINS_ON_CONVERTED_VALUE` |
+| `structural-query-smells.cs` | N+1, cartesian product, correlated subquery, implicit conversion | `N_PLUS_ONE_QUERY_IN_LOOP`, `MULTIPLE_ROUND_TRIPS_IN_LOOP`, `CARTESIAN_PRODUCT_QUERY`, `CORRELATED_SUBQUERY_IN_PROJECTION`, `IMPLICIT_CONVERSION_IN_FILTER`, `DUPLICATED_PREDICATE`, `FULL_ENTITY_MATERIALIZATION` |
 
 Run `npm test` to validate all contracts. Use these samples when evaluating QueryForge output in Cursor or other MCP clients.
 
@@ -302,7 +319,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Pull requests run CI (`npm test` and `np
 
 ## Roadmap
 
-- **v0.5.0** — Dapper safety rules, expanded aggregation smells, optional disk-less project scan via client-provided files
+- **v0.6.0** — Dapper safety rules, expanded aggregation smells
 - **Future** — Optional Roslyn-based analysis, guarded `apply_patch`
 
 ## License

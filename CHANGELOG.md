@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-06-06
+
+### Added
+
+- Structural query smell detection with seven new rules
+- `N_PLUS_ONE_QUERY_IN_LOOP` — query execution inside foreach/for/while
+- `MULTIPLE_ROUND_TRIPS_IN_LOOP` — multiple queries in the same loop body
+- `CARTESIAN_PRODUCT_QUERY` — multiple `from` clauses or chained `SelectMany`
+- `CORRELATED_SUBQUERY_IN_PROJECTION` — correlated aggregates inside `Select`
+- `IMPLICIT_CONVERSION_IN_FILTER` — `ToString`/`Parse`/`Convert` inside `Where`
+- `DUPLICATED_PREDICATE` — repeated conditions in the same filter
+- `FULL_ENTITY_MATERIALIZATION` — `ToList`/`ToListAsync` without prior `Select`
+- Combo bonuses in batch analysis scoring for high-risk smell combinations
+- `examples/structural-query-smells.cs` contract sample with integration test
+
+### Changed
+
+- `analyze_query_batch` scoring prioritizes structural smells (N+1, cartesian product, implicit conversion)
+- README documents structural query smell categories
+
 ## [0.4.0] - 2026-06-06
 
 ### Added
@@ -128,6 +148,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation: README, examples, query smells, limitations, production usage, contributing
 - Test suite (unit + integration) with .NET fixtures
 
+[0.5.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.5.0
 [0.4.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.4.0
 [0.3.2]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.3.2
 [0.3.1]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.3.1
