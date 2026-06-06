@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-06-06
+
+### Added
+
+- `suggest_index_candidates` MCP tool for conservative index candidate analysis
+- `IndexCandidateService` extracting equality, range and ordering columns from LINQ/EF queries
+- Provider-specific SQL formatting for relational databases (SQL Server, PostgreSQL, MySQL, MariaDB, SQLite, Oracle)
+- Warnings when query smells may prevent effective index usage
+- `examples/index-candidate-query.cs` contract sample with integration test
+- Tests for index candidate service and markdown formatter
+
+### Notes
+
+- QueryForge does not inspect real database schema, existing indexes or execution plans
+- Every suggestion is an index **candidate** requiring manual review
+- Cosmos DB, MongoDB and In-Memory providers do not receive relational SQL output
+
 ## [0.5.0] - 2026-06-06
 
 ### Added
@@ -148,6 +165,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation: README, examples, query smells, limitations, production usage, contributing
 - Test suite (unit + integration) with .NET fixtures
 
+[0.6.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.6.0
 [0.5.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.5.0
 [0.4.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.4.0
 [0.3.2]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.3.2
