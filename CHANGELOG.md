@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.2] - 2026-06-07
+
+### Added
+
+- Added GitHub Actions workflow to publish the npm package on release tags
+- Added automatic GitHub Release creation for tagged releases
+
+### Changed
+
+- CI now validates package contents with `npm pack --dry-run`
+
 ## [0.6.1] - 2026-06-06
 
 ### Fixed
@@ -186,6 +197,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation: README, examples, query smells, limitations, production usage, contributing
 - Test suite (unit + integration) with .NET fixtures
 
+[0.6.2]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.6.2
 [0.6.1]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.6.1
 [0.6.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.6.0
 [0.5.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.5.0
