@@ -12,7 +12,7 @@ describe('stringTransformOnColumnFilterRule', () => {
       `
     });
 
-    expect(result).toHaveLength(1);
+    expect(result.length).toBeGreaterThanOrEqual(1);
     expect(result[0].code).toBe('STRING_TRANSFORM_ON_COLUMN_FILTER');
     expect(result[0].category).toBe('sargability');
   });

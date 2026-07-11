@@ -1,35 +1,46 @@
 import { QueryRule } from '../domain/query-rule.js';
+import { createReviewRequiredFix } from '../domain/query-smell.js';
 import { createSmell, hasWhereClause } from './rule-helpers.js';
+import { findWherePatternMatches } from './support/where-range.js';
 
-const CONTAINS_ON_CONVERTED_PATTERN = /\.ToString\s*\(\s*\)[\s\S]*?\.Contains\s*\(/;
+const CONTAINS_ON_CONVERTED_PATTERN = /\.ToString\s*\(\s*\)[\s\S]*?\.Contains\s*\([^)]*\)/;
 
 export const containsOnConvertedValueRule: QueryRule = {
   code: 'CONTAINS_ON_CONVERTED_VALUE',
 
   analyze(request) {
-    if (!hasWhereClause(request.code, CONTAINS_ON_CONVERTED_PATTERN)) {
+    if (!hasWhereClause(request.code, /\.ToString\s*\(\s*\)[\s\S]*?\.Contains\s*\(/)) {
       return [];
     }
 
-    return [
+    const matches = findWherePatternMatches(request.code, CONTAINS_ON_CONVERTED_PATTERN);
+
+    return matches.map((match) =>
       createSmell({
         code: 'CONTAINS_ON_CONVERTED_VALUE',
-        title: 'Contains sobre valor convertido',
+        title: 'Contains on converted value',
         severity: 'high',
         category: 'sargability',
-        message: 'A query usa Contains após ToString() em coluna dentro do Where.',
+        message: 'The query uses Contains after ToString() on a column inside Where.',
         whyItMatters:
-          'Contains sobre valor convertido costuma virar LIKE com wildcard e CAST/CONVERT, geralmente não sargável.',
+          'Contains on converted values often becomes LIKE with wildcards and CAST/CONVERT, which is usually not sargable.',
         suggestion:
-          'Evite busca textual sobre valores convertidos. Use comparação tipada ou campo de busca dedicado.',
+          'Avoid text search on converted values. Use typed comparison or a dedicated search field.',
         rewritePlan: [
-          'Remova ToString().Contains do filtro.',
-          'Defina estratégia de busca no tipo original ou campo normalizado.',
-          'Valide o SQL gerado pelo provider antes de aplicar em produção.'
+          'Remove ToString().Contains from the filter.',
+          'Define a search strategy on the original type or a normalized field.',
+          'Validate generated SQL with the provider before production use.'
         ],
         safeAutoFix: false,
-        confidence: 0.92
+        confidence: 0.92,
+        range: match.range,
+        fixes: [
+          createReviewRequiredFix(
+            'remove-contains-on-converted-value',
+            'Remove Contains on converted value and use a typed or normalized search strategy'
+          )
+        ]
       })
-    ];
+    );
   }
 };

@@ -1,23 +1,65 @@
-name: Publish npm package
+name: Release npm package
 
 on:
   push:
-    tags:
-      - 'v*.*.*'
+    branches:
+      - main
+    paths:
+      - package.json
+      - package-lock.json
+      - CHANGELOG.md
+      - src/server.ts
+      - .github/workflows/publish.yml
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
 
 jobs:
-  publish:
-    name: Publish to npm
+  release:
+    name: Tag, publish and release
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve version
+        id: version
+        shell: bash
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Validate release version
+        run: node scripts/validate-release-version.mjs "${{ steps.version.outputs.tag }}"
+
+      - name: Check tag
+        id: tag
+        shell: bash
+        run: |
+          git fetch --tags --force
+
+          if git rev-parse "refs/tags/${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Stop when release already exists
+        if: steps.tag.outputs.exists == 'true'
+        run: |
+          echo "Release ${{ steps.version.outputs.tag }} already exists. Nothing to publish."
 
       - name: Setup Node.js
+        if: steps.tag.outputs.exists == 'false'
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -25,24 +67,71 @@ jobs:
           cache: npm
 
       - name: Install dependencies
+        if: steps.tag.outputs.exists == 'false'
         run: npm ci
 
       - name: Run tests
+        if: steps.tag.outputs.exists == 'false'
         run: npm test
 
       - name: Build package
+        if: steps.tag.outputs.exists == 'false'
         run: npm run build
 
-      - name: Check package contents
-        run: npm pack --dry-run
+      - name: Validate public API
+        if: steps.tag.outputs.exists == 'false'
+        run: npm run validate:api
+
+      - name: Pack npm tarball
+        if: steps.tag.outputs.exists == 'false'
+        id: pack
+        shell: bash
+        run: |
+          PACK_OUTPUT="$(npm pack --json --ignore-scripts)"
+          echo "$PACK_OUTPUT"
+
+          PACK_FILE="$(node -e "
+            const packs = JSON.parse(process.argv[1]);
+            if (!Array.isArray(packs) || !packs[0]?.filename) {
+              console.error('npm pack did not return a filename.');
+              process.exit(1);
+            }
+            process.stdout.write(packs[0].filename);
+          " "$PACK_OUTPUT")"
+
+          echo "file=$PACK_FILE" >> "$GITHUB_OUTPUT"
+
+      - name: Validate npm tarball
+        if: steps.tag.outputs.exists == 'false'
+        run: node scripts/validate-package.mjs "${{ steps.pack.outputs.file }}"
+
+      - name: Create tag
+        if: steps.tag.outputs.exists == 'false'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.version.outputs.tag }}" \
+            -m "QueryForge MCP ${{ steps.version.outputs.tag }}" \
+            "${{ github.sha }}"
+          git push origin "${{ steps.version.outputs.tag }}"
 
       - name: Publish to npm
-        run: npm publish --access public
+        if: steps.tag.outputs.exists == 'false'
+        run: npm publish "${{ steps.pack.outputs.file }}" --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Extract release notes
+        if: steps.tag.outputs.exists == 'false'
+        run: node scripts/extract-changelog.mjs "${{ steps.version.outputs.tag }}" --output release-notes.md
+
       - name: Create GitHub Release
+        if: steps.tag.outputs.exists == 'false'
         uses: softprops/action-gh-release@v2
         with:
-          name: QueryForge MCP ${{ github.ref_name }}
-          generate_release_notes: true
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: QueryForge MCP ${{ steps.version.outputs.tag }}
+          body_path: release-notes.md
+          files: |
+            ${{ steps.pack.outputs.file }}

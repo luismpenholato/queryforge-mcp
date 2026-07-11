@@ -1,5 +1,8 @@
 import { QueryRule } from '../domain/query-rule.js';
 import { createSmell, hasCustomMethodInWhere } from './rule-helpers.js';
+import { findWherePatternMatches } from './support/where-range.js';
+
+const CUSTOM_METHOD_PATTERN = /\b([A-Z][A-Za-z0-9_]*)\s*\(/;
 
 export const clientSideMethodInWhereRule: QueryRule = {
   code: 'CLIENT_SIDE_METHOD_IN_WHERE',
@@ -9,25 +12,28 @@ export const clientSideMethodInWhereRule: QueryRule = {
       return [];
     }
 
+    const matches = findWherePatternMatches(request.code, CUSTOM_METHOD_PATTERN);
+
     return [
       createSmell({
         code: 'CLIENT_SIDE_METHOD_IN_WHERE',
-        title: 'Método customizado dentro do Where',
+        title: 'Custom method inside Where',
         severity: 'medium',
         category: 'translation',
         message:
-          'A query chama método customizado dentro do Where, o que pode não traduzir para SQL.',
+          'The query calls a custom method inside Where, which may not translate to SQL.',
         whyItMatters:
-          'Métodos customizados no predicado frequentemente forçam avaliação client-side ou falham na tradução, dependendo do provider e versão.',
+          'Custom methods in predicates often force client-side evaluation or fail translation depending on provider and version.',
         suggestion:
-          'Garanta que o método seja traduzível para SQL. Prefira filtros baseados em expressão ou equivalentes no banco.',
+          'Ensure the method is translatable to SQL. Prefer expression-based filters or database equivalents.',
         rewritePlan: [
-          'Verifique se o método possui tradução SQL suportada pelo provider.',
-          'Substitua por expressão inline traduzível ou lógica no banco.',
-          'Valide o SQL gerado com logging do EF Core.'
+          'Verify whether the method has SQL translation supported by the provider.',
+          'Replace with an inline translatable expression or database logic.',
+          'Validate generated SQL with EF Core logging.'
         ],
         safeAutoFix: false,
-        confidence: 0.78
+        confidence: 0.78,
+        range: matches[0]?.range
       })
     ];
   }

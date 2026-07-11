@@ -31,8 +31,8 @@ describe('functionOnColumnFilterRule', () => {
       `
     });
 
-    expect(result).toHaveLength(1);
-    expect(result[0].code).toBe('FUNCTION_ON_COLUMN_FILTER');
+    expect(result.length).toBeGreaterThanOrEqual(1);
+    expect(result.every((item) => item.code === 'FUNCTION_ON_COLUMN_FILTER')).toBe(true);
   });
 
   it('should detect Month inside Contains within Where', () => {

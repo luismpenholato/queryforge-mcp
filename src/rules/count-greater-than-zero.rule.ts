@@ -1,30 +1,42 @@
 import { QueryRule } from '../domain/query-rule.js';
+import { createSmell } from './rule-helpers.js';
+import { buildCountGreaterThanZeroSmellData } from './support/query-fixes.js';
+import { findAllPatternMatches } from './support/pattern-match.js';
+
+const COUNT_EXISTENCE_PATTERN =
+  /\.(?<method>Count|CountAsync)\s*\([^)]*\)\s*(?:>|!=|>=)\s*(?:0|1)/;
 
 export const countGreaterThanZeroRule: QueryRule = {
   code: 'COUNT_GREATER_THAN_ZERO',
 
   analyze(request) {
     const code = request.code;
+    const matches = findAllPatternMatches(code, COUNT_EXISTENCE_PATTERN);
 
-    const hasCountGreaterThanZero =
-      /\.(Count|CountAsync)\s*\([^)]*\)\s*(>|!=)\s*0/.test(code) ||
-      /\.(Count|CountAsync)\s*\([^)]*\)\s*>=\s*1/.test(code);
-
-    if (!hasCountGreaterThanZero) {
+    if (matches.length === 0) {
       return [];
     }
 
-    return [
-      {
+    const safeOccurrences = buildCountGreaterThanZeroSmellData(code);
+
+    return matches.map((match) => {
+      const safeOccurrence = safeOccurrences.find(
+        (occurrence) =>
+          occurrence.range.start === match.range.start || occurrence.range.end === match.range.end
+      );
+
+      return createSmell({
         code: 'COUNT_GREATER_THAN_ZERO',
-        title: 'Uso de Count para verificar existência',
+        title: 'Count used to check existence',
         severity: 'medium',
-        message:
-          'A query parece usar Count/CountAsync para verificar existência de registros.',
+        message: 'The query appears to use Count/CountAsync to check whether records exist.',
         suggestion:
-          'Troque por Any/AnyAsync quando o objetivo for apenas verificar se existe pelo menos um registro.',
-        confidence: 0.9
-      }
-    ];
+          'Replace with Any/AnyAsync when the goal is only to verify that at least one record exists.',
+        confidence: 0.9,
+        range: safeOccurrence?.range ?? match.range,
+        fixes: safeOccurrence?.fixes,
+        safeAutoFix: Boolean(safeOccurrence?.fixes?.length)
+      });
+    });
   }
 };

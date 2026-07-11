@@ -25,7 +25,7 @@ Security fixes are provided for the latest release on the `main` branch and the 
 
 If you believe you found a security issue, please **do not** open a public GitHub issue with exploit details.
 
-Instead, open a private security advisory on GitHub when available, or contact the maintainer through the repository issue tracker without publishing exploit details.
+Instead, open a private [GitHub Security Advisory](https://github.com/luismpenholato/queryforge-mcp/security/advisories/new) when available, or contact the maintainer through the repository issue tracker without publishing exploit details.
 
 Include:
 

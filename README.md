@@ -1,22 +1,19 @@
 # QueryForge MCP
 
-Local-first MCP server for reviewing .NET EF Core, LINQ and Dapper query performance.
+[![CI](https://github.com/luismpenholato/queryforge-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/luismpenholato/queryforge-mcp/actions/workflows/ci.yml)
+[![Release](https://github.com/luismpenholato/queryforge-mcp/actions/workflows/publish.yml/badge.svg)](https://github.com/luismpenholato/queryforge-mcp/actions/workflows/publish.yml)
+[![npm version](https://img.shields.io/npm/v/@luispenholato/queryforge-mcp)](https://www.npmjs.com/package/@luispenholato/queryforge-mcp)
+[![npm downloads](https://img.shields.io/npm/dm/@luispenholato/queryforge-mcp)](https://www.npmjs.com/package/@luispenholato/queryforge-mcp)
+[![GitHub release](https://img.shields.io/github/v/release/luismpenholato/queryforge-mcp?label=release)](https://github.com/luismpenholato/queryforge-mcp/releases)
+[![License: MIT](https://img.shields.io/github/license/luismpenholato/queryforge-mcp)](LICENSE)
+[![Node.js](https://img.shields.io/node/v/@luispenholato/queryforge-mcp)](https://nodejs.org/)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/luismpenholato?label=Sponsor&logo=github)](https://github.com/sponsors/luismpenholato)
 
-## What it does
+QueryForge is a local-first MCP server and programmatic TypeScript library for reviewing .NET LINQ, Entity Framework and Dapper query performance.
 
-QueryForge analyzes C# query snippets and returns conservative suggestions for common performance smells. It is designed for development and code review — not automatic refactoring.
+It analyzes C# query snippets and returns conservative suggestions for common performance smells. It is designed for development and code review — not automatic refactoring.
 
-### Tools
-
-| Tool | Description |
-| --- | --- |
-| `inspect_project_stack` | Detect .NET runtime, EF/Dapper usage, and database providers from pasted `.csproj` content |
-| `analyze_query` | Detect performance smells and return a summary with severity |
-| `analyze_query_batch` | Analyze multiple C# files/snippets and rank the riskiest ones |
-| `suggest_ef_rewrite` | Conservative EF Core rewrite advisor (safe auto-fixes + structured plan, no file changes) |
-| `suggest_dapper_alternative` | Suggest a conservative Dapper alternative for read-only queries |
-| `suggest_index_candidates` | Suggest conservative index candidates from query filters and ordering (not definitive indexes) |
-| `generate_review_report` | Generate a markdown review report with checklist |
+The public API is designed for editor, CLI and CI integrations.
 
 ## What it does not do
 
@@ -28,18 +25,97 @@ QueryForge analyzes C# query snippets and returns conservative suggestions for c
 
 Validate every suggestion with generated SQL, tests, and real data when possible.
 
-## Install from npm
+## Install as MCP
 
 ```bash
 npx -y @luispenholato/queryforge-mcp
 ```
 
-Or install globally:
+Pinned version:
+
+```json
+{
+  "mcpServers": {
+    "queryforge": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@luispenholato/queryforge-mcp@0.7.0"
+      ]
+    }
+  }
+}
+```
+
+## Install as library
 
 ```bash
-npm install -g @luispenholato/queryforge-mcp
-queryforge-mcp
+npm install @luispenholato/queryforge-mcp
 ```
+
+## Programmatic API
+
+```ts
+import {
+  QueryAnalysisService,
+  type QueryAnalysisRequest
+} from '@luispenholato/queryforge-mcp';
+
+const service = new QueryAnalysisService();
+
+const request: QueryAnalysisRequest = {
+  code: `
+    var exists = await context.Products
+      .Where(product => product.IsActive)
+      .CountAsync() > 0;
+  `,
+  provider: 'ef-core',
+  filePath: 'Features/Products/ProductService.cs',
+  languageId: 'csharp'
+};
+
+const result = service.analyze(request);
+
+for (const smell of result.smells) {
+  console.log({
+    code: smell.code,
+    severity: smell.severity,
+    range: smell.range,
+    fingerprint: smell.fingerprint,
+    fixes: smell.fixes
+  });
+}
+```
+
+### Source ranges
+
+- `range.start` is inclusive and `range.end` is exclusive.
+- Offsets are calculated against the original `request.code` string.
+- Ranges are optional when a smell cannot be located safely.
+- Line and column should be calculated by the consumer (`document.positionAt(range.start)`).
+
+### Query fixes
+
+- Only fixes with `safety: "safe"` are eligible for automatic application.
+- Fixes with `safety: "review-required"` need human validation.
+- QueryForge does not modify files; the consumer decides whether to apply edits.
+- Apply multiple edits from the highest offset to the lowest.
+
+### Privacy
+
+QueryForge analyzes the code supplied by the local consumer. It does not connect to a database, upload source code or execute SQL as part of analysis.
+
+## MCP tools
+
+| Tool | Description |
+| --- | --- |
+| `inspect_project_stack` | Detect .NET runtime, EF/Dapper usage, and database providers from pasted `.csproj` content |
+| `analyze_query` | Detect performance smells and return a summary with severity |
+| `analyze_query_batch` | Analyze multiple C# files/snippets and rank the riskiest ones |
+| `suggest_ef_rewrite` | Conservative EF Core rewrite advisor (safe auto-fixes + structured plan, no file changes) |
+| `suggest_dapper_alternative` | Suggest a conservative Dapper alternative for read-only queries |
+| `suggest_index_candidates` | Suggest conservative index candidates from query filters and ordering (not definitive indexes) |
+| `generate_review_report` | Generate a markdown review report with checklist |
 
 ## Cursor MCP config
 
@@ -66,7 +142,7 @@ Pinned version:
       "command": "npx",
       "args": [
         "-y",
-        "@luispenholato/queryforge-mcp@0.6.1"
+        "@luispenholato/queryforge-mcp@0.7.0"
       ]
     }
   }
@@ -78,9 +154,8 @@ Pinned version:
 ```bash
 git clone https://github.com/luismpenholato/queryforge-mcp.git
 cd queryforge-mcp
-npm install
-npm test
-npm run build
+npm ci
+npm run validate
 ```
 
 ## Run locally
@@ -392,14 +467,63 @@ src/
 
 Use fictional English domain names only (`Product`, `Category`, `Order`, `Customer`, `Invoice`, `Review`, `Store`). Avoid company-specific or Portuguese domain names in examples.
 
-## Contributing
+## Community
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Pull requests run CI (`npm test` and `npm run build`).
+- [Contributing](CONTRIBUTING.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Security Policy](SECURITY.md)
+- [Report a bug](https://github.com/luismpenholato/queryforge-mcp/issues/new?template=bug_report.yml)
+- [Request a feature](https://github.com/luismpenholato/queryforge-mcp/issues/new?template=feature_request.yml)
+- [Support the project](https://github.com/sponsors/luismpenholato)
+
+Pull requests run CI (`npm run validate`).
+
+## Support the project
+
+QueryForge is free, open source and local-first.
+
+If it helps you review LINQ, Entity Framework or Dapper queries, you can support its continued development through [GitHub Sponsors](https://github.com/sponsors/luismpenholato).
+
+## Release process
+
+1. Update `package.json`, `package-lock.json` and `src/server.ts` to the new stable version, for example `0.8.0`.
+2. Add the matching section to `CHANGELOG.md` and the release link at the bottom.
+3. Run `npm run validate`.
+4. Commit the release changes and merge into `main`.
+5. GitHub Actions on `main` will automatically:
+   - read `package.json.version`;
+   - validate `package-lock.json`, `CHANGELOG.md` and `src/server.ts`;
+   - run tests, build and public API validation;
+   - pack and validate the exact npm tarball;
+   - create the annotated tag `vX.Y.Z` only after those checks pass;
+   - publish and attach the same validated tarball;
+   - create the GitHub Release from the matching changelog section.
+
+If the tag for the current version already exists, the workflow finishes as a no-op.
+
+Example:
+
+```text
+version: 0.8.0
+merge into main
+→ validate metadata
+→ test, build, validate API, pack and validate tarball
+→ tag v0.8.0
+→ npm @luispenholato/queryforge-mcp@0.8.0
+→ GitHub Release QueryForge MCP v0.8.0
+```
+
+Useful local helpers:
+
+```bash
+npm run release:validate -- v0.8.0
+npm run release:notes -- v0.8.0
+```
 
 ## Roadmap
 
-- **v0.7.0** — Dapper safety rules, expanded aggregation smells
-- **Future** — Optional Roslyn-based analysis, guarded `apply_patch`
+- **v0.8.0** — Dapper safety rules, expanded aggregation smells
+- **Future** — VS Code/Cursor extension, optional Roslyn-based analysis, guarded `apply_patch`
 
 ## License
 

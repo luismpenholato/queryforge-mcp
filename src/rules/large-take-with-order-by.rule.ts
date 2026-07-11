@@ -1,5 +1,6 @@
 import { QueryRule } from '../domain/query-rule.js';
 import { createSmell, hasLargeTake } from './rule-helpers.js';
+import { findFirstMethodCallRange } from './support/where-range.js';
 
 export const largeTakeWithOrderByRule: QueryRule = {
   code: 'LARGE_TAKE_WITH_ORDER_BY',
@@ -12,24 +13,27 @@ export const largeTakeWithOrderByRule: QueryRule = {
       return [];
     }
 
+    const range = findFirstMethodCallRange(code, ['Take']);
+
     return [
       createSmell({
         code: 'LARGE_TAKE_WITH_ORDER_BY',
-        title: 'Take alto com ordenação',
+        title: 'Large Take with ordering',
         severity: 'medium',
         category: 'pagination',
-        message: 'A query combina OrderBy com Take >= 10000.',
+        message: 'The query combines OrderBy with Take >= 10000.',
         whyItMatters:
-          'Conjuntos ordenados grandes podem exigir sort significativo, IO extra e alto uso de memória.',
+          'Large ordered result sets may require significant sorting, extra IO and high memory usage.',
         suggestion:
-          'Verifique estratégia de índice para as colunas de ordenação e reduza o volume retornado.',
+          'Verify index strategy for OrderBy columns and reduce the returned volume.',
         rewritePlan: [
-          'Confirme índice cobrindo colunas do OrderBy.',
-          'Reduza Take ou pagine em lotes menores.',
-          'Avalie projeção mínima antes da ordenação.'
+          'Confirm an index covering OrderBy columns.',
+          'Reduce Take or paginate in smaller batches.',
+          'Evaluate minimal projection before ordering.'
         ],
         safeAutoFix: false,
-        confidence: 0.84
+        confidence: 0.84,
+        range
       })
     ];
   }
