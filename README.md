@@ -467,9 +467,16 @@ src/
 
 Use fictional English domain names only (`Product`, `Category`, `Order`, `Customer`, `Invoice`, `Review`, `Store`). Avoid company-specific or Portuguese domain names in examples.
 
-## Contributing
+## Community
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Pull requests run CI (`npm run validate`).
+- [Contributing](CONTRIBUTING.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Security Policy](SECURITY.md)
+- [Report a bug](https://github.com/luismpenholato/queryforge-mcp/issues/new?template=bug_report.yml)
+- [Request a feature](https://github.com/luismpenholato/queryforge-mcp/issues/new?template=feature_request.yml)
+- [Support the project](https://github.com/sponsors/luismpenholato)
+
+Pull requests run CI (`npm run validate`).
 
 ## Support the project
 
@@ -479,12 +486,36 @@ If it helps you review LINQ, Entity Framework or Dapper queries, you can support
 
 ## Release process
 
-1. Update `package.json` and `package-lock.json` version, for example `npm version 0.7.0 --no-git-tag-version`.
+1. Update `package.json`, `package-lock.json` and `src/server.ts` to the new stable version, for example `0.8.0`.
 2. Add the matching section to `CHANGELOG.md` and the release link at the bottom.
 3. Run `npm run validate`.
-4. Commit the release changes.
-5. Create and push tag `v0.7.0`.
-6. The publish workflow validates the tag, runs tests, builds, packs the exact tarball, publishes to npm, extracts changelog notes and creates the GitHub Release with the `.tgz` attached.
+4. Commit the release changes and merge into `main`.
+5. GitHub Actions on `main` will automatically:
+   - read `package.json.version`;
+   - validate `package-lock.json` and `CHANGELOG.md`;
+   - create the annotated tag `vX.Y.Z` when it does not exist yet;
+   - run tests, build and public API validation;
+   - pack, validate, publish and attach the exact same npm tarball;
+   - create the GitHub Release from the matching changelog section.
+
+If the tag for the current version already exists, the workflow finishes as a no-op.
+
+Example:
+
+```text
+version: 0.8.0
+merge into main
+→ tag v0.8.0
+→ npm @luispenholato/queryforge-mcp@0.8.0
+→ GitHub Release QueryForge MCP v0.8.0
+```
+
+Useful local helpers:
+
+```bash
+npm run release:validate -- v0.8.0
+npm run release:notes -- v0.8.0
+```
 
 ## Roadmap
 

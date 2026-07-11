@@ -63,4 +63,30 @@ if (!changelog.includes(releaseLink)) {
   process.exit(1);
 }
 
+const serverPath = resolve(root, 'src/server.ts');
+
+try {
+  const serverSource = readFileSync(serverPath, 'utf8');
+  const serverVersionMatch = serverSource.match(/version:\s*['"]([^'"]+)['"]/);
+
+  if (!serverVersionMatch) {
+    console.error('src/server.ts is missing MCP server version metadata.');
+    process.exit(1);
+  }
+
+  if (serverVersionMatch[1] !== version) {
+    console.error(
+      `src/server.ts version ${serverVersionMatch[1]} does not match tag ${tagArg}.`
+    );
+    process.exit(1);
+  }
+} catch (error) {
+  if (error.code === 'ENOENT') {
+    console.error('src/server.ts was not found for server version validation.');
+    process.exit(1);
+  }
+
+  throw error;
+}
+
 console.log(`Release version ${tagArg} is consistent with package metadata and changelog.`);

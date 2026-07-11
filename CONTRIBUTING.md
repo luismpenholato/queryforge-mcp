@@ -2,6 +2,8 @@
 
 Thank you for helping improve QueryForge MCP. This project prioritizes **safe, conservative analysis** over aggressive rewrites.
 
+By participating in this project, you agree to follow our [Code of Conduct](CODE_OF_CONDUCT.md).
+
 ## Development setup
 
 Requirements:
@@ -43,6 +45,22 @@ tests/
 examples/        # sample C# queries
 ```
 
+## Issues
+
+Before opening an issue:
+
+- Search existing issues.
+- Use a minimal fictional reproduction.
+- Do not include proprietary code, credentials, connection strings or customer data.
+- Use [GitHub Security Advisories](https://github.com/luismpenholato/queryforge-mcp/security/advisories) for security vulnerabilities.
+
+## Pull requests
+
+- Keep changes focused.
+- Add or update tests when behavior changes.
+- Run `npm run validate`.
+- Update documentation and changelog when applicable.
+
 ## Adding a new query rule
 
 1. Create `src/rules/<rule-name>.rule.ts` implementing `QueryRule`
@@ -52,15 +70,6 @@ examples/        # sample C# queries
    - at least one case that does not false-positive on correct code
 4. Use fictional English domain names in examples (`Product`, `Category`, `Order`, `Customer`, etc.)
 5. Do not use Portuguese or company-specific entity names in tests or examples
-
-## Pull request expectations
-
-1. **Focused scope** — one feature or fix per PR when possible
-2. **Tests** — new rules and services must include tests
-3. **Docs** — update README or CHANGELOG when user-facing behavior changes
-4. **Conservative by default** — preserve behavior; prefer suggestions over automatic rewrites
-5. **No secrets** — never commit `.env`, credentials, or connection strings
-6. **Clean checks** — `npm run validate` must pass
 
 ## Code style
 

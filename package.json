@@ -1,7 +1,7 @@
 {
   "name": "@luispenholato/queryforge-mcp",
   "version": "0.7.0",
-  "description": "Local-first MCP server for reviewing .NET LINQ, EF Core and Dapper query performance.",
+  "description": "Local-first MCP server and TypeScript library for reviewing .NET LINQ, Entity Framework and Dapper query performance.",
   "type": "module",
   "main": "./dist/public-api.js",
   "types": "./dist/public-api.d.ts",
@@ -29,6 +29,7 @@
     "package:check": "node scripts/validate-package.mjs",
     "validate": "npm test && npm run build && npm run validate:api && npm run package:check",
     "release:validate": "node scripts/validate-release-version.mjs",
+    "release:notes": "node scripts/extract-changelog.mjs",
     "prepublishOnly": "npm run validate"
   },
   "keywords": [

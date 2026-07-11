@@ -1,32 +1,33 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync, rmSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { existsSync, rmSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runNpm } from './run-npm.mjs';
+import { resolveTarballPath, validateTarballArchive } from './validate-package-lib.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-
-const REQUIRED_PATHS = [
-  'dist/index.js',
-  'dist/public-api.js',
-  'dist/public-api.d.ts',
-  'README.md',
-  'LICENSE',
-  'CHANGELOG.md',
-  'package.json'
-];
-
-const FORBIDDEN_PREFIXES = ['src/', 'tests/', '.github/', 'coverage/'];
+const tarballArg = process.argv[2];
 
 function fail(message) {
   console.error(message);
   process.exit(1);
 }
 
-let packFile;
+function formatBytes(size) {
+  return typeof size === 'number' ? `${size} bytes` : 'unknown size';
+}
+
+let temporaryTarball;
 
 try {
+  if (tarballArg) {
+    const tarballPath = resolveTarballPath(root, tarballArg);
+    validateTarballArchive(tarballPath);
+    console.log(`Package validation passed (${tarballArg}).`);
+    process.exit(0);
+  }
+
   const packOutput = runNpm(['pack', '--json', '--ignore-scripts'], { cwd: root });
   const packs = JSON.parse(packOutput);
 
@@ -34,36 +35,16 @@ try {
     fail('npm pack did not return a tarball filename.');
   }
 
-  packFile = resolve(root, packs[0].filename);
-  const listedPaths = new Set(packs[0].files.map((entry) => entry.path));
-
-  for (const required of REQUIRED_PATHS) {
-    if (!listedPaths.has(required)) {
-      fail(`Missing required package file: ${required}`);
-    }
-  }
-
-  for (const path of listedPaths) {
-    if (FORBIDDEN_PREFIXES.some((prefix) => path.startsWith(prefix))) {
-      fail(`Forbidden package file: ${path}`);
-    }
-
-    if (path === 'release-notes.md' || path.endsWith('.tgz') || path.includes('.env')) {
-      fail(`Forbidden package file: ${path}`);
-    }
-  }
-
-  const indexContent = readFileSync(join(root, 'dist/index.js'), 'utf8');
-
-  if (!indexContent.startsWith('#!/usr/bin/env node')) {
-    fail('dist/index.js is missing the Node shebang.');
-  }
-
-  console.log(`Package validation passed (${packs[0].filename}, ${packs[0].size} bytes).`);
+  temporaryTarball = resolve(root, packs[0].filename);
+  validateTarballArchive(temporaryTarball);
+  console.log(
+    `Package validation passed (${packs[0].filename}, ${formatBytes(packs[0].size)}).`
+  );
 } catch (error) {
-  fail(`Package validation failed: ${error.stderr?.toString() ?? error.message}`);
+  const message = error.stderr?.toString() ?? error.message ?? String(error);
+  fail(`Package validation failed: ${message}`);
 } finally {
-  if (packFile && existsSync(packFile) && process.env.KEEP_PACKAGE_TARBALL !== '1') {
-    rmSync(packFile, { force: true });
+  if (temporaryTarball && existsSync(temporaryTarball)) {
+    rmSync(temporaryTarball, { force: true });
   }
 }

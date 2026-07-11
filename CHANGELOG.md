@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added a Contributor Covenant code of conduct.
+- Added community links for contributing, security and project support.
+- Added structured GitHub issue forms for bug reports and feature requests.
+- Added a pull request template with validation and QueryForge safety checks.
+- Added private security reporting and project support links to the issue template configuration.
+- Added package validation for an existing npm tarball.
+- Added automatic release tag creation when a new package version reaches `main`.
 - Added a public programmatic API for editor, CLI and local tooling integrations.
 - Added structured source ranges, diagnostic fingerprints and query fixes.
 - Added post-build validation for compiled JavaScript and TypeScript declarations.
@@ -20,11 +27,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed the release workflow validating a different tarball from the artifact published to npm.
+- Fixed package validation to inspect the actual archive contents and compiled entry points.
 - Fixed clean CI runs failing because unit tests required `dist/public-api.d.ts` before the build step.
 - Fixed expected negative release-script tests polluting CI output with error messages.
 
 ### Changed
 
+- Updated the package description to reflect both MCP server and TypeScript library usage.
+- Updated the release workflow to create the version tag, publish npm and create the GitHub Release in a single execution.
+- Updated the release workflow to validate, publish and attach the same npm tarball.
 - Moved compiled declaration validation from Vitest unit tests to post-build API validation.
 - Improved npm package validation and release consistency checks.
 - Updated analysis summaries to use English messages.

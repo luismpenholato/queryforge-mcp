@@ -1,0 +1,93 @@
+name: Bug report
+description: Report reproducible incorrect behavior in QueryForge
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Acknowledgements
+      options:
+        - label: I searched existing issues.
+          required: true
+        - label: I am not including proprietary, confidential or customer code.
+          required: true
+        - label: I understand that QueryForge uses heuristic analysis and does not replace execution-plan validation.
+          required: true
+    validations:
+      required: true
+
+  - type: dropdown
+    id: usage
+    attributes:
+      label: QueryForge usage
+      options:
+        - MCP server
+        - Programmatic API
+        - npm package
+        - Release/CI workflow
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The QueryForge version you are using, for example 0.7.0.
+      placeholder: "0.7.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include what applies, such as operating system, Node.js version, MCP client or editor, and .NET/EF version when relevant.
+      placeholder: |
+        OS:
+        Node.js:
+        MCP client/editor:
+        .NET/EF:
+    validations:
+      required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Explain the incorrect behavior clearly and concisely.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Provide a minimal fictional example. Do not include proprietary application code, credentials, connection strings or customer data.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Optional logs, screenshots or other details that may help.
+    validations:
+      required: false
