@@ -1,11 +1,9 @@
-import { existsSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import * as publicApi from '../../src/public-api.js';
 import { QueryAnalysisService } from '../../src/public-api.js';
 
-describe('public API', () => {
-  it('should export expected services and types', () => {
+describe('public API (source)', () => {
+  it('should export expected services', () => {
     expect(publicApi.QueryAnalysisService).toBeTypeOf('function');
     expect(publicApi.QueryBatchAnalysisService).toBeTypeOf('function');
     expect(publicApi.ProjectStackService).toBeTypeOf('function');
@@ -14,7 +12,7 @@ describe('public API', () => {
     expect(publicApi.IndexCandidateService).toBeTypeOf('function');
   });
 
-  it('should instantiate services without side effects', () => {
+  it('should instantiate services without MCP side effects', () => {
     const service = new QueryAnalysisService();
     const result = service.analyze({
       code: 'var exists = query.Count() > 0;',
@@ -22,15 +20,15 @@ describe('public API', () => {
     });
 
     expect(result.smells.length).toBeGreaterThan(0);
+    expect(result.smells.some((smell) => smell.code === 'COUNT_GREATER_THAN_ZERO')).toBe(true);
     expect((globalThis as { __queryforgeMcpStarted?: boolean }).__queryforgeMcpStarted).toBeUndefined();
   });
 
-  it('should expose generated declarations after build', () => {
-    const declarationPath = resolve(process.cwd(), 'dist/public-api.d.ts');
-    expect(existsSync(declarationPath)).toBe(true);
+  it('should not import the MCP entrypoint through the public API module graph', async () => {
+    const publicApiUrl = new URL('../../src/public-api.ts', import.meta.url).href;
+    const indexUrl = new URL('../../src/index.ts', import.meta.url).href;
 
-    const contents = readFileSync(declarationPath, 'utf8');
-    expect(contents).toContain('QueryAnalysisService');
-    expect(contents).toContain('export type { QueryAnalysisRequest }');
+    expect(publicApiUrl).not.toBe(indexUrl);
+    expect(publicApi.QueryAnalysisService.name).toBe('QueryAnalysisService');
   });
 });

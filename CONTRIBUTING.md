@@ -4,12 +4,17 @@ Thank you for helping improve QueryForge MCP. This project prioritizes **safe, c
 
 ## Development setup
 
+Requirements:
+
+- Node.js 20+
+
 ```bash
 git clone https://github.com/luismpenholato/queryforge-mcp.git
 cd queryforge-mcp
-npm install
+npm ci
 npm test
 npm run build
+npm run validate
 ```
 
 Optional during development:
@@ -27,11 +32,13 @@ src/
   application/   # analysis, rewrite, and report services
   tools/         # MCP tool registrations
   formatters/    # output formatters
+  public-api.ts  # programmatic library entrypoint
   index.ts       # stdio entrypoint
   server.ts      # MCP server setup
 tests/
   rules/         # unit tests per rule
   application/   # service tests
+  public-api/    # source-level public API tests
   examples/      # canonical example coverage
 examples/        # sample C# queries
 ```
@@ -53,7 +60,7 @@ examples/        # sample C# queries
 3. **Docs** — update README or CHANGELOG when user-facing behavior changes
 4. **Conservative by default** — preserve behavior; prefer suggestions over automatic rewrites
 5. **No secrets** — never commit `.env`, credentials, or connection strings
-6. **Clean checks** — `npm test` and `npm run build` must pass
+6. **Clean checks** — `npm run validate` must pass
 
 ## Code style
 
@@ -62,6 +69,7 @@ examples/        # sample C# queries
 - Keep rules isolated and regex/heuristic-based unless there is a strong reason otherwise
 - MCP tools stay thin: validate input → call service → return text content
 - Avoid logging to stdout (MCP uses stdio transport)
+- Unit tests must not depend on `dist/`; compiled artifact checks belong in `scripts/validate-public-api.mjs`
 
 ## Questions
 

@@ -5,23 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.7.0] - 2026-07-10
+## [0.7.0] - 2026-07-11
 
 ### Added
 
 - Added a public programmatic API for editor, CLI and local tooling integrations.
-- Added structured source ranges for query diagnostics.
-- Added structured query fixes for safe Count-to-Any and AsNoTracking scenarios.
-- Added stable diagnostic fingerprints for future baseline and editor integrations.
-- Added optional file and project context to query analysis requests.
-- Added optional cancellation and issue limits for individual and batch analysis.
-- Added compiled public API smoke validation.
-- Added release version validation against package metadata, lockfile and changelog.
-- Added automatic GitHub Release notes extracted from the matching changelog version.
+- Added structured source ranges, diagnostic fingerprints and query fixes.
+- Added post-build validation for compiled JavaScript and TypeScript declarations.
+- Added consumer-oriented TypeScript validation against the published package layout.
+- Added GitHub Sponsors configuration and package funding metadata.
+- Added consumer-oriented API and privacy documentation.
+- Added automated release notes extracted from the matching changelog version.
 - Added npm package tarball attachment to GitHub Releases.
+
+### Fixed
+
+- Fixed clean CI runs failing because unit tests required `dist/public-api.d.ts` before the build step.
+- Fixed expected negative release-script tests polluting CI output with error messages.
 
 ### Changed
 
+- Moved compiled declaration validation from Vitest unit tests to post-build API validation.
+- Improved npm package validation and release consistency checks.
 - Updated analysis summaries to use English messages.
 - Improved separation between the analysis core and MCP presentation layer.
 - Updated CI to validate both `main` and `develop`.

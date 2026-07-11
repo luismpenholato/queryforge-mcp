@@ -53,8 +53,10 @@ jobs:
           PACK_FILE="$(node -e "const packs = JSON.parse(process.argv[1]); if (!packs[0]?.filename) process.exit(1); process.stdout.write(packs[0].filename);" "$PACK_OUTPUT")"
           echo "file=$PACK_FILE" >> "$GITHUB_OUTPUT"
 
-      - name: Check package contents
-        run: npm pack --dry-run --ignore-scripts
+      - name: Validate package contents
+        env:
+          KEEP_PACKAGE_TARBALL: '1'
+        run: node scripts/validate-package.mjs
 
       - name: Publish to npm
         run: npm publish ${{ steps.pack.outputs.file }} --access public

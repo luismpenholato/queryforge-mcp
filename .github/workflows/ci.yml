@@ -35,5 +35,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Validate package
-        run: npm run validate
+      - name: Run tests
+        run: npm test
+
+      - name: Build package
+        run: npm run build
+
+      - name: Validate public API
+        run: npm run validate:api
+
+      - name: Check package contents
+        run: npm run package:check

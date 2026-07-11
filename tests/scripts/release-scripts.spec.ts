@@ -7,14 +7,19 @@ import { describe, expect, it } from 'vitest';
 const root = resolve(process.cwd());
 const node = process.execPath;
 
-function runExtractor(args: string[], cwd = root, scriptPath = join(root, 'scripts/extract-changelog.mjs')): { status: number; stdout: string; stderr: string } {
+function runScript(scriptRelativePath: string, args: string[] = [], cwd = root): {
+  status: number;
+  stdout: string;
+  stderr: string;
+} {
   try {
-    const stdout = execFileSync(node, [scriptPath, ...args], {
+    const result = execFileSync(node, [join(root, scriptRelativePath), ...args], {
       cwd,
-      encoding: 'utf8'
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe']
     });
 
-    return { status: 0, stdout, stderr: '' };
+    return { status: 0, stdout: result, stderr: '' };
   } catch (error) {
     const execError = error as { status?: number; stdout?: string; stderr?: string };
     return {
@@ -27,37 +32,42 @@ function runExtractor(args: string[], cwd = root, scriptPath = join(root, 'scrip
 
 describe('extract-changelog script', () => {
   it('should extract an existing version', () => {
-    const result = runExtractor(['0.7.0']);
+    const result = runScript('scripts/extract-changelog.mjs', ['0.7.0']);
 
     expect(result.status).toBe(0);
     expect(result.stdout).toContain('### Added');
     expect(result.stdout).toContain('public programmatic API');
     expect(result.stdout).not.toContain('## [0.6.2]');
+    expect(result.stderr).toBe('');
   });
 
   it('should accept v-prefixed versions', () => {
-    const result = runExtractor(['v0.7.0']);
+    const result = runScript('scripts/extract-changelog.mjs', ['v0.7.0']);
     expect(result.status).toBe(0);
     expect(result.stdout).toContain('### Changed');
+    expect(result.stderr).toBe('');
   });
 
   it('should fail for missing versions', () => {
-    const result = runExtractor(['9.9.9']);
+    const result = runScript('scripts/extract-changelog.mjs', ['9.9.9']);
     expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('Changelog section not found for version 9.9.9.');
   });
 
   it('should fail for invalid SemVer', () => {
-    const result = runExtractor(['not-a-version']);
+    const result = runScript('scripts/extract-changelog.mjs', ['not-a-version']);
     expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('Invalid SemVer');
   });
 
   it('should write to output file when requested', () => {
     const dir = mkdtempSync(join(tmpdir(), 'queryforge-changelog-'));
     const output = join(dir, 'release-notes.md');
-    const result = runExtractor(['0.7.0', '--output', output]);
+    const result = runScript('scripts/extract-changelog.mjs', ['0.7.0', '--output', output]);
 
     expect(result.status).toBe(0);
     expect(readFileSync(output, 'utf8')).toContain('### Compatibility');
+    expect(result.stderr).toBe('');
   });
 
   it('should fail when changelog section is empty', () => {
@@ -68,27 +78,25 @@ describe('extract-changelog script', () => {
       'utf8'
     );
 
-    const result = runExtractor(['1.0.0'], dir, join(root, 'scripts/extract-changelog.mjs'));
+    const result = runScript('scripts/extract-changelog.mjs', ['1.0.0'], dir);
     expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('Changelog section for version 1.0.0 is empty.');
   });
 });
 
 describe('validate-release-version script', () => {
   it('should validate the current release metadata', () => {
-    const stdout = execFileSync(node, ['scripts/validate-release-version.mjs', 'v0.7.0'], {
-      cwd: root,
-      encoding: 'utf8'
-    });
+    const result = runScript('scripts/validate-release-version.mjs', ['v0.7.0']);
 
-    expect(stdout).toContain('Release version v0.7.0 is consistent');
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('Release version v0.7.0 is consistent');
+    expect(result.stderr).toBe('');
   });
 
   it('should fail for mismatched tags', () => {
-    expect(() =>
-      execFileSync(node, ['scripts/validate-release-version.mjs', 'v9.9.9'], {
-        cwd: root,
-        encoding: 'utf8'
-      })
-    ).toThrow();
+    const result = runScript('scripts/validate-release-version.mjs', ['v9.9.9']);
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('does not match tag v9.9.9');
   });
 });
