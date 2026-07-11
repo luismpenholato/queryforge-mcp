@@ -492,10 +492,11 @@ If it helps you review LINQ, Entity Framework or Dapper queries, you can support
 4. Commit the release changes and merge into `main`.
 5. GitHub Actions on `main` will automatically:
    - read `package.json.version`;
-   - validate `package-lock.json` and `CHANGELOG.md`;
-   - create the annotated tag `vX.Y.Z` when it does not exist yet;
+   - validate `package-lock.json`, `CHANGELOG.md` and `src/server.ts`;
    - run tests, build and public API validation;
-   - pack, validate, publish and attach the exact same npm tarball;
+   - pack and validate the exact npm tarball;
+   - create the annotated tag `vX.Y.Z` only after those checks pass;
+   - publish and attach the same validated tarball;
    - create the GitHub Release from the matching changelog section.
 
 If the tag for the current version already exists, the workflow finishes as a no-op.
@@ -505,6 +506,8 @@ Example:
 ```text
 version: 0.8.0
 merge into main
+→ validate metadata
+→ test, build, validate API, pack and validate tarball
 → tag v0.8.0
 → npm @luispenholato/queryforge-mcp@0.8.0
 → GitHub Release QueryForge MCP v0.8.0

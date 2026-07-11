@@ -29,12 +29,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed the release workflow validating a different tarball from the artifact published to npm.
 - Fixed package validation to inspect the actual archive contents and compiled entry points.
+- Moved automatic tag creation after tests, build, public API validation and npm tarball validation to avoid leaving unreleasable tags after validation failures.
 - Fixed clean CI runs failing because unit tests required `dist/public-api.d.ts` before the build step.
 - Fixed expected negative release-script tests polluting CI output with error messages.
 
 ### Changed
 
 - Updated the package description to reflect both MCP server and TypeScript library usage.
+- Reduced automatic release triggers to package version, lockfile, changelog, MCP server version and release workflow changes.
 - Updated the release workflow to create the version tag, publish npm and create the GitHub Release in a single execution.
 - Updated the release workflow to validate, publish and attach the same npm tarball.
 - Moved compiled declaration validation from Vitest unit tests to post-build API validation.

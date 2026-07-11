@@ -8,10 +8,8 @@ on:
       - package.json
       - package-lock.json
       - CHANGELOG.md
+      - src/server.ts
       - .github/workflows/publish.yml
-      - scripts/**
-      - src/**
-      - tests/**
   workflow_dispatch:
 
 concurrency:
@@ -72,15 +70,6 @@ jobs:
         if: steps.tag.outputs.exists == 'false'
         run: npm ci
 
-      - name: Create tag
-        if: steps.tag.outputs.exists == 'false'
-        shell: bash
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "${{ steps.version.outputs.tag }}" -m "QueryForge MCP ${{ steps.version.outputs.tag }}" "${{ github.sha }}"
-          git push origin "${{ steps.version.outputs.tag }}"
-
       - name: Run tests
         if: steps.tag.outputs.exists == 'false'
         run: npm test
@@ -115,6 +104,17 @@ jobs:
       - name: Validate npm tarball
         if: steps.tag.outputs.exists == 'false'
         run: node scripts/validate-package.mjs "${{ steps.pack.outputs.file }}"
+
+      - name: Create tag
+        if: steps.tag.outputs.exists == 'false'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.version.outputs.tag }}" \
+            -m "QueryForge MCP ${{ steps.version.outputs.tag }}" \
+            "${{ github.sha }}"
+          git push origin "${{ steps.version.outputs.tag }}"
 
       - name: Publish to npm
         if: steps.tag.outputs.exists == 'false'
