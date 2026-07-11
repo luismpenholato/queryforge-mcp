@@ -1,0 +1,73 @@
+name: Feature request
+description: Suggest an improvement for QueryForge
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Acknowledgements
+      options:
+        - label: I searched existing issues.
+          required: true
+        - label: This request fits QueryForge's local-first and conservative scope.
+          required: true
+        - label: The examples do not contain proprietary or confidential code.
+          required: true
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What developer problem would this solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+
+  - type: dropdown
+    id: integration
+    attributes:
+      label: Intended integration
+      options:
+        - MCP server
+        - Programmatic API
+        - VS Code/editor integration
+        - CLI/CI integration
+        - Query analysis rule
+        - Documentation
+        - Release/tooling
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: example
+    attributes:
+      label: Example
+      description: Optional fictional code sample or workflow that illustrates the request.
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false
+
+  - type: textarea
+    id: safety
+    attributes:
+      label: Safety and limitations
+      description: Optional notes about false positives, automatic rewrites, or other risks.
+    validations:
+      required: false

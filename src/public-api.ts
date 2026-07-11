@@ -1,0 +1,24 @@
+export { QueryAnalysisService } from './application/query-analysis.service.js';
+export { QueryBatchAnalysisService } from './application/query-batch-analysis.service.js';
+export { ProjectStackService } from './application/project-stack.service.js';
+export { EfRewriteService } from './application/ef-rewrite.service.js';
+export { ReviewReportService } from './application/review-report.service.js';
+export { IndexCandidateService } from './application/index-candidate.service.js';
+
+export type { QueryAnalysisRequest } from './domain/query-analysis-request.js';
+export type { QueryAnalysisResult } from './domain/query-analysis-result.js';
+export type { QuerySmell } from './domain/query-smell.js';
+export type { QueryFix, QueryFixSafety, QueryTextEdit } from './domain/query-fix.js';
+export type { SourceRange } from './domain/source-range.js';
+export type { Severity } from './domain/severity.js';
+export type { QueryProvider } from './domain/query-provider.js';
+export type { ProjectAnalysisContext } from './domain/project-analysis-context.js';
+export type { AnalysisOptions } from './domain/analysis-options.js';
+export type { BatchAnalysisRequest } from './domain/batch-analysis-request.js';
+export type { BatchAnalysisResult, FileAnalysisResult } from './domain/batch-analysis-result.js';
+export type { QueryFileInput } from './domain/query-file-input.js';
+export type { IndexCandidateRequest } from './domain/index-candidate-request.js';
+export type { IndexCandidateResult } from './domain/index-candidate-result.js';
+export type { IndexCandidate, IndexColumn } from './domain/index-candidate.js';
+export type { ProjectStackInspectionRequest } from './domain/project-stack-inspection-request.js';
+export type { ProjectStackInspectionResult } from './domain/project-stack-inspection-result.js';

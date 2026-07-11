@@ -5,6 +5,53 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-07-11
+
+### Added
+
+- Added a Contributor Covenant code of conduct.
+- Added community links for contributing, security and project support.
+- Added structured GitHub issue forms for bug reports and feature requests.
+- Added a pull request template with validation and QueryForge safety checks.
+- Added private security reporting and project support links to the issue template configuration.
+- Added package validation for an existing npm tarball.
+- Added automatic release tag creation when a new package version reaches `main`.
+- Added a public programmatic API for editor, CLI and local tooling integrations.
+- Added structured source ranges, diagnostic fingerprints and query fixes.
+- Added post-build validation for compiled JavaScript and TypeScript declarations.
+- Added consumer-oriented TypeScript validation against the published package layout.
+- Added GitHub Sponsors configuration and package funding metadata.
+- Added consumer-oriented API and privacy documentation.
+- Added automated release notes extracted from the matching changelog version.
+- Added npm package tarball attachment to GitHub Releases.
+
+### Fixed
+
+- Fixed the release workflow validating a different tarball from the artifact published to npm.
+- Fixed package validation to inspect the actual archive contents and compiled entry points.
+- Moved automatic tag creation after tests, build, public API validation and npm tarball validation to avoid leaving unreleasable tags after validation failures.
+- Fixed clean CI runs failing because unit tests required `dist/public-api.d.ts` before the build step.
+- Fixed expected negative release-script tests polluting CI output with error messages.
+
+### Changed
+
+- Updated the package description to reflect both MCP server and TypeScript library usage.
+- Reduced automatic release triggers to package version, lockfile, changelog, MCP server version and release workflow changes.
+- Updated the release workflow to create the version tag, publish npm and create the GitHub Release in a single execution.
+- Updated the release workflow to validate, publish and attach the same npm tarball.
+- Moved compiled declaration validation from Vitest unit tests to post-build API validation.
+- Improved npm package validation and release consistency checks.
+- Updated analysis summaries to use English messages.
+- Improved separation between the analysis core and MCP presentation layer.
+- Updated CI to validate both `main` and `develop`.
+- Updated the publishing workflow to publish the exact validated npm tarball.
+- Updated GitHub Releases to use curated changelog content instead of generated notes.
+
+### Compatibility
+
+- Preserved all existing MCP tools and stdio execution behavior.
+- Preserved the existing `queryforge-mcp` executable and npm package name.
+
 ## [0.6.2] - 2026-06-07
 
 ### Added
@@ -197,6 +244,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation: README, examples, query smells, limitations, production usage, contributing
 - Test suite (unit + integration) with .NET fixtures
 
+[0.7.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.7.0
 [0.6.2]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.6.2
 [0.6.1]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.6.1
 [0.6.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.6.0

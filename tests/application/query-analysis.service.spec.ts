@@ -19,7 +19,7 @@ describe('QueryAnalysisService', () => {
     expect(result.smells).toHaveLength(0);
     expect(result.severity).toBe('info');
     expect(result.manualReviewRequired).toBe(false);
-    expect(result.summary).toContain('Nenhum problema');
+    expect(result.summary).toContain('No obvious query performance issues');
     expect(result.recommendations).toHaveLength(0);
   });
 
@@ -57,7 +57,7 @@ describe('QueryAnalysisService', () => {
     });
 
     expect(result.severity).toBe('high');
-    expect(result.summary).toContain('Severidade geral: high');
+    expect(result.summary).toContain('Overall severity: high');
   });
 
   it('should set manualReviewRequired when severity is high', () => {

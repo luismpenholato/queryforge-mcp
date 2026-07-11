@@ -1,5 +1,5 @@
-import { QuerySmell } from '../domain/query-smell.js';
-import { Severity } from '../domain/severity.js';
+import type { QuerySmell } from '../domain/query-smell.js';
+import type { Severity } from '../domain/severity.js';
 
 export interface SmellOptions {
   code: string;
@@ -12,6 +12,8 @@ export interface SmellOptions {
   whyItMatters?: string;
   rewritePlan?: string[];
   safeAutoFix?: boolean;
+  range?: import('../domain/source-range.js').SourceRange;
+  fixes?: import('../domain/query-fix.js').QueryFix[];
 }
 
 export function createSmell(options: SmellOptions): QuerySmell {

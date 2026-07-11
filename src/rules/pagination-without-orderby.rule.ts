@@ -1,4 +1,6 @@
 import { QueryRule } from '../domain/query-rule.js';
+import { createSmell } from './rule-helpers.js';
+import { findFirstMethodCallRange } from './support/where-range.js';
 
 export const paginationWithoutOrderByRule: QueryRule = {
   code: 'PAGINATION_WITHOUT_ORDER_BY',
@@ -13,17 +15,22 @@ export const paginationWithoutOrderByRule: QueryRule = {
       return [];
     }
 
+    const range =
+      findFirstMethodCallRange(code, ['Skip', 'Take']) ??
+      findFirstMethodCallRange(code, ['SkipAsync', 'TakeAsync']);
+
     return [
-      {
+      createSmell({
         code: 'PAGINATION_WITHOUT_ORDER_BY',
-        title: 'Paginação sem ordenação explícita',
+        title: 'Pagination without explicit ordering',
         severity: 'high',
         message:
-          'A query usa Skip/Take sem OrderBy. Isso pode gerar resultados instáveis entre execuções.',
+          'The query uses Skip/Take without OrderBy, which can produce unstable results between executions.',
         suggestion:
-          'Adicione OrderBy antes de Skip/Take usando uma coluna determinística, como Id ou DataCriacao.',
-        confidence: 0.9
-      }
+          'Add OrderBy before Skip/Take using a deterministic column such as Id or CreatedAt.',
+        confidence: 0.9,
+        range
+      })
     ];
   }
 };

@@ -1,4 +1,8 @@
 import { QueryRule } from '../domain/query-rule.js';
+import { createSmell } from './rule-helpers.js';
+import { findChainSegmentRange } from './support/where-range.js';
+
+const TO_LIST_BEFORE_SELECT_PATTERN = /\.(?:ToList|ToListAsync)\s*\(\s*\)[\s\S]*?\.Select\s*\(/;
 
 export const toListBeforeSelectRule: QueryRule = {
   code: 'TO_LIST_BEFORE_SELECT',
@@ -6,24 +10,27 @@ export const toListBeforeSelectRule: QueryRule = {
   analyze(request) {
     const code = request.code;
 
-    const hasToListBeforeSelect =
-      /\.(ToList|ToListAsync)\s*\(\s*\)[\s\S]*\.Select\s*\(/.test(code);
-
-    if (!hasToListBeforeSelect) {
+    if (!TO_LIST_BEFORE_SELECT_PATTERN.test(code)) {
       return [];
     }
 
+    const range = findChainSegmentRange(
+      code,
+      /\.(?:ToList|ToListAsync)\s*\(\s*\)[\s\S]*?\.Select\s*\([^)]*\)/
+    );
+
     return [
-      {
+      createSmell({
         code: 'TO_LIST_BEFORE_SELECT',
-        title: 'Materialização antes da projeção',
+        title: 'Materialization before projection',
         severity: 'high',
         message:
-          'A query parece chamar ToList/ToListAsync antes do Select, fazendo a projeção em memória.',
+          'The query appears to call ToList/ToListAsync before Select, projecting in memory instead of the database.',
         suggestion:
-          'Mova o Select para antes do ToList/ToListAsync para projetar no banco apenas os campos necessários.',
-        confidence: 0.85
-      }
+          'Move Select before ToList/ToListAsync so only required fields are projected in the database.',
+        confidence: 0.85,
+        range
+      })
     ];
   }
 };

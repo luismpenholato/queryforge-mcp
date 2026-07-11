@@ -1,5 +1,6 @@
 import { QueryRule } from '../domain/query-rule.js';
 import { createSmell, hasFullEntityMaterialization } from './rule-helpers.js';
+import { findChainSegmentRange } from './support/where-range.js';
 
 export const fullEntityMaterializationRule: QueryRule = {
   code: 'FULL_ENTITY_MATERIALIZATION',
@@ -9,10 +10,15 @@ export const fullEntityMaterializationRule: QueryRule = {
       return [];
     }
 
+    const range = findChainSegmentRange(
+      request.code,
+      /\.(?:ToList|ToListAsync)\s*\(\s*\)/
+    );
+
     return [
       createSmell({
         code: 'FULL_ENTITY_MATERIALIZATION',
-        title: 'Materialização de entidade inteira',
+        title: 'Full entity materialization',
         severity: 'medium',
         category: 'projection',
         message: 'The query materializes full entities instead of projecting only required columns.',
@@ -25,7 +31,8 @@ export const fullEntityMaterializationRule: QueryRule = {
           'Avoid loading wide entities when only a few columns are needed.'
         ],
         safeAutoFix: false,
-        confidence: 0.75
+        confidence: 0.75,
+        range
       })
     ];
   }

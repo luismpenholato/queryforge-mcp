@@ -1,5 +1,6 @@
 import { QueryRule } from '../domain/query-rule.js';
 import { createSmell, hasLargeTake, parseTakeValue } from './rule-helpers.js';
+import { findFirstMethodCallRange } from './support/where-range.js';
 
 export const largeTakeRule: QueryRule = {
   code: 'LARGE_TAKE',
@@ -10,24 +11,26 @@ export const largeTakeRule: QueryRule = {
     }
 
     const takeValue = parseTakeValue(request.code);
+    const range = findFirstMethodCallRange(request.code, ['Take']);
 
     return [
       createSmell({
         code: 'LARGE_TAKE',
-        title: 'Take com volume alto',
+        title: 'Large Take value',
         severity: 'medium',
         category: 'pagination',
-        message: `A query usa Take(${takeValue}) com valor alto (>= 10000).`,
+        message: `The query uses Take(${takeValue}) with a high value (>= 10000).`,
         whyItMatters:
-          'Volumes altos aumentam pressão de memória, IO e tempo de resposta mesmo com filtro eficiente.',
-        suggestion: 'Revise tamanho de página, estratégia de batching e uso de memória.',
+          'Large result sets increase memory pressure, IO and response time even with an efficient filter.',
+        suggestion: 'Review page size, batching strategy and memory usage.',
         rewritePlan: [
-          'Reduza o Take para um tamanho de página seguro.',
-          'Considere paginação incremental ou streaming quando aplicável.',
-          'Monitore memória e latência em ambiente representativo.'
+          'Reduce Take to a safe page size.',
+          'Consider incremental pagination or streaming when applicable.',
+          'Monitor memory and latency in a representative environment.'
         ],
         safeAutoFix: false,
-        confidence: 0.85
+        confidence: 0.85,
+        range
       })
     ];
   }

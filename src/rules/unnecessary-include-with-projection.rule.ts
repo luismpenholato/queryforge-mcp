@@ -1,4 +1,6 @@
 import { QueryRule } from '../domain/query-rule.js';
+import { createSmell } from './rule-helpers.js';
+import { findFirstMethodCallRange } from './support/where-range.js';
 
 export const unnecessaryIncludeWithProjectionRule: QueryRule = {
   code: 'UNNECESSARY_INCLUDE_WITH_PROJECTION',
@@ -13,17 +15,20 @@ export const unnecessaryIncludeWithProjectionRule: QueryRule = {
       return [];
     }
 
+    const range = findFirstMethodCallRange(code, ['Include']);
+
     return [
-      {
+      createSmell({
         code: 'UNNECESSARY_INCLUDE_WITH_PROJECTION',
-        title: 'Include possivelmente desnecessário com projeção',
+        title: 'Possibly unnecessary Include with projection',
         severity: 'medium',
         message:
-          'A query usa Include junto com Select. Em projeções para DTO, o Include muitas vezes é desnecessário.',
+          'The query uses Include together with Select. For DTO projections, Include is often unnecessary.',
         suggestion:
-          'Verifique se o Include pode ser removido e se os campos necessários podem ser projetados diretamente no Select.',
-        confidence: 0.7
-      }
+          'Check whether Include can be removed and required fields projected directly in Select.',
+        confidence: 0.7,
+        range
+      })
     ];
   }
 };

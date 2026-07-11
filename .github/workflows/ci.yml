@@ -4,9 +4,15 @@ on:
   push:
     branches:
       - main
+      - develop
   pull_request:
     branches:
       - main
+      - develop
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -35,5 +41,8 @@ jobs:
       - name: Build package
         run: npm run build
 
+      - name: Validate public API
+        run: npm run validate:api
+
       - name: Check package contents
-        run: npm pack --dry-run
+        run: npm run package:check

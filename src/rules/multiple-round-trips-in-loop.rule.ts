@@ -1,5 +1,8 @@
 import { QueryRule } from '../domain/query-rule.js';
+import { createReviewRequiredFix } from '../domain/query-smell.js';
 import { countQueryTerminalsInLoops, createSmell } from './rule-helpers.js';
+import { findChainSegmentRange } from './support/where-range.js';
+import { QUERY_TERMINAL_PATTERN } from './rule-helpers.js';
 
 export const multipleRoundTripsInLoopRule: QueryRule = {
   code: 'MULTIPLE_ROUND_TRIPS_IN_LOOP',
@@ -9,10 +12,12 @@ export const multipleRoundTripsInLoopRule: QueryRule = {
       return [];
     }
 
+    const range = findChainSegmentRange(request.code, QUERY_TERMINAL_PATTERN);
+
     return [
       createSmell({
         code: 'MULTIPLE_ROUND_TRIPS_IN_LOOP',
-        title: 'Múltiplos round-trips no mesmo loop',
+        title: 'Multiple round-trips in the same loop',
         severity: 'high',
         category: 'round-trips',
         message: 'Multiple database queries inside the same loop can create excessive round-trips.',
@@ -25,7 +30,14 @@ export const multipleRoundTripsInLoopRule: QueryRule = {
           'Use dictionaries or lookups keyed by id inside the loop.'
         ],
         safeAutoFix: false,
-        confidence: 0.8
+        confidence: 0.8,
+        range,
+        fixes: [
+          createReviewRequiredFix(
+            'consolidate-loop-round-trips',
+            'Consolidate loop queries into batched lookups before iteration'
+          )
+        ]
       })
     ];
   }

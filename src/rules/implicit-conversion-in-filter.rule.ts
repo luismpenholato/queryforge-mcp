@@ -1,21 +1,25 @@
 import { QueryRule } from '../domain/query-rule.js';
+import { createReviewRequiredFix } from '../domain/query-smell.js';
 import { createSmell, hasWhereClause } from './rule-helpers.js';
+import { findWherePatternMatches } from './support/where-range.js';
 
 const IMPLICIT_CONVERSION_PATTERN =
-  /\.ToString\s*\(|Convert\.ToString\s*\(|Convert\.ToInt32\s*\(|int\.Parse\s*\(|long\.Parse\s*\(|decimal\.Parse\s*\(|Guid\.Parse\s*\(|DateTime\.Parse\s*\(/;
+  /\.ToString\s*\([^)]*\)|Convert\.ToString\s*\([^)]*\)|Convert\.ToInt32\s*\([^)]*\)|int\.Parse\s*\([^)]*\)|long\.Parse\s*\([^)]*\)|decimal\.Parse\s*\([^)]*\)|Guid\.Parse\s*\([^)]*\)|DateTime\.Parse\s*\([^)]*\)/;
 
 export const implicitConversionInFilterRule: QueryRule = {
   code: 'IMPLICIT_CONVERSION_IN_FILTER',
 
   analyze(request) {
-    if (!hasWhereClause(request.code, IMPLICIT_CONVERSION_PATTERN)) {
+    if (!hasWhereClause(request.code, /\.ToString\s*\(|Convert\.ToString\s*\(|Convert\.ToInt32\s*\(|int\.Parse\s*\(|long\.Parse\s*\(|decimal\.Parse\s*\(|Guid\.Parse\s*\(|DateTime\.Parse\s*\(/)) {
       return [];
     }
 
-    return [
+    const matches = findWherePatternMatches(request.code, IMPLICIT_CONVERSION_PATTERN);
+
+    return matches.map((match) =>
       createSmell({
         code: 'IMPLICIT_CONVERSION_IN_FILTER',
-        title: 'Conversão implícita no filtro',
+        title: 'Implicit conversion in filter',
         severity: 'high',
         category: 'sargability',
         message:
@@ -30,8 +34,15 @@ export const implicitConversionInFilterRule: QueryRule = {
           'Remove ToString/Parse/Convert calls from column predicates.'
         ],
         safeAutoFix: false,
-        confidence: 0.82
+        confidence: 0.82,
+        range: match.range,
+        fixes: [
+          createReviewRequiredFix(
+            'align-filter-types',
+            'Align filter types and remove conversion from the predicate'
+          )
+        ]
       })
-    ];
+    );
   }
 };
