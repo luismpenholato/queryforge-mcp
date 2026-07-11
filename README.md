@@ -28,6 +28,52 @@ QueryForge analyzes C# query snippets and returns conservative suggestions for c
 
 Validate every suggestion with generated SQL, tests, and real data when possible.
 
+## Programmatic API
+
+QueryForge can also be consumed as a library for editors, CLIs and local tooling:
+
+```ts
+import {
+  QueryAnalysisService,
+  type QueryAnalysisRequest
+} from '@luispenholato/queryforge-mcp';
+
+const service = new QueryAnalysisService();
+
+const request: QueryAnalysisRequest = {
+  code: `
+    var exists = await context.Products
+      .Where(product => product.IsActive)
+      .CountAsync() > 0;
+  `,
+  provider: 'ef-core',
+  filePath: 'Features/Products/ProductService.cs',
+  languageId: 'csharp'
+};
+
+const result = service.analyze(request);
+
+for (const smell of result.smells) {
+  console.log({
+    code: smell.code,
+    range: smell.range,
+    fingerprint: smell.fingerprint,
+    fixes: smell.fixes
+  });
+}
+```
+
+Notes:
+
+- Runs locally in your process. It does not read workspace files automatically.
+- Does not connect to databases or send code anywhere.
+- Source ranges use zero-based offsets against the original `request.code`.
+- Ranges are optional when a smell cannot be located safely.
+- Fingerprints are deterministic for duplicate suppression and baselines.
+- Only fixes marked `safe` should be applied automatically.
+- Fixes marked `review-required` need human validation.
+- Validate recommendations with generated SQL, tests and real data.
+
 ## Install from npm
 
 ```bash
@@ -66,7 +112,7 @@ Pinned version:
       "command": "npx",
       "args": [
         "-y",
-        "@luispenholato/queryforge-mcp@0.6.1"
+        "@luispenholato/queryforge-mcp@0.7.0"
       ]
     }
   }
@@ -396,10 +442,19 @@ Use fictional English domain names only (`Product`, `Category`, `Order`, `Custom
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Pull requests run CI (`npm test` and `npm run build`).
 
+## Release process
+
+1. Update `package.json` and `package-lock.json` version, for example `npm version 0.7.0 --no-git-tag-version`.
+2. Add the matching section to `CHANGELOG.md` and the release link at the bottom.
+3. Run `npm run validate`.
+4. Commit the release changes.
+5. Create and push tag `v0.7.0`.
+6. The publish workflow validates the tag, runs tests, builds, packs the exact tarball, publishes to npm, extracts changelog notes and creates the GitHub Release with the `.tgz` attached.
+
 ## Roadmap
 
-- **v0.7.0** — Dapper safety rules, expanded aggregation smells
-- **Future** — Optional Roslyn-based analysis, guarded `apply_patch`
+- **v0.8.0** — Dapper safety rules, expanded aggregation smells
+- **Future** — VS Code/Cursor extension, optional Roslyn-based analysis, guarded `apply_patch`
 
 ## License
 

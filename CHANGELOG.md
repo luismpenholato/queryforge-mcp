@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-07-10
+
+### Added
+
+- Added a public programmatic API for editor, CLI and local tooling integrations.
+- Added structured source ranges for query diagnostics.
+- Added structured query fixes for safe Count-to-Any and AsNoTracking scenarios.
+- Added stable diagnostic fingerprints for future baseline and editor integrations.
+- Added optional file and project context to query analysis requests.
+- Added optional cancellation and issue limits for individual and batch analysis.
+- Added compiled public API smoke validation.
+- Added release version validation against package metadata, lockfile and changelog.
+- Added automatic GitHub Release notes extracted from the matching changelog version.
+- Added npm package tarball attachment to GitHub Releases.
+
+### Changed
+
+- Updated analysis summaries to use English messages.
+- Improved separation between the analysis core and MCP presentation layer.
+- Updated CI to validate both `main` and `develop`.
+- Updated the publishing workflow to publish the exact validated npm tarball.
+- Updated GitHub Releases to use curated changelog content instead of generated notes.
+
+### Compatibility
+
+- Preserved all existing MCP tools and stdio execution behavior.
+- Preserved the existing `queryforge-mcp` executable and npm package name.
+
 ## [0.6.2] - 2026-06-07
 
 ### Added
@@ -197,6 +225,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation: README, examples, query smells, limitations, production usage, contributing
 - Test suite (unit + integration) with .NET fixtures
 
+[0.7.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.7.0
 [0.6.2]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.6.2
 [0.6.1]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.6.1
 [0.6.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.6.0

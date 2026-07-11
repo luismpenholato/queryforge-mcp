@@ -5,6 +5,10 @@ on:
     tags:
       - 'v*.*.*'
 
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
@@ -16,6 +20,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -27,22 +33,41 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate release version
+        run: node scripts/validate-release-version.mjs ${{ github.ref_name }}
+
       - name: Run tests
         run: npm test
 
       - name: Build package
         run: npm run build
 
+      - name: Validate public API
+        run: npm run validate:api
+
+      - name: Pack npm tarball
+        id: pack
+        run: |
+          PACK_OUTPUT="$(npm pack --json --ignore-scripts)"
+          echo "$PACK_OUTPUT"
+          PACK_FILE="$(node -e "const packs = JSON.parse(process.argv[1]); if (!packs[0]?.filename) process.exit(1); process.stdout.write(packs[0].filename);" "$PACK_OUTPUT")"
+          echo "file=$PACK_FILE" >> "$GITHUB_OUTPUT"
+
       - name: Check package contents
-        run: npm pack --dry-run
+        run: npm pack --dry-run --ignore-scripts
 
       - name: Publish to npm
-        run: npm publish --access public
+        run: npm publish ${{ steps.pack.outputs.file }} --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Extract release notes
+        run: node scripts/extract-changelog.mjs ${{ github.ref_name }} --output release-notes.md
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           name: QueryForge MCP ${{ github.ref_name }}
-          generate_release_notes: true
+          body_path: release-notes.md
+          files: |
+            ${{ steps.pack.outputs.file }}

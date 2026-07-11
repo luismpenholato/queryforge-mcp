@@ -1,5 +1,5 @@
-import { QuerySmell } from './query-smell.js';
-import { Severity } from './severity.js';
+import type { QuerySmell } from './query-smell.js';
+import type { Severity } from './severity.js';
 
 export interface FileAnalysisResult {
   path: string;
@@ -10,6 +10,7 @@ export interface FileAnalysisResult {
   smells: QuerySmell[];
   recommendations: string[];
   manualReviewRequired: boolean;
+  truncated?: boolean;
 }
 
 export interface BatchAnalysisResult {

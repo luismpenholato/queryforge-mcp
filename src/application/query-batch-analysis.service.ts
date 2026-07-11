@@ -1,3 +1,4 @@
+import type { AnalysisOptions } from '../domain/analysis-options.js';
 import { BatchAnalysisRequest } from '../domain/batch-analysis-request.js';
 import {
   BatchAnalysisResult,
@@ -36,34 +37,42 @@ const highImpactBonus: Record<string, number> = {
 export class QueryBatchAnalysisService {
   private readonly analysisService = new QueryAnalysisService();
 
-  analyze(request: BatchAnalysisRequest): BatchAnalysisResult {
+  analyze(request: BatchAnalysisRequest, options?: AnalysisOptions): BatchAnalysisResult {
     const files = request.files ?? [];
+    const results: FileAnalysisResult[] = [];
 
-    const results = files
-      .filter((file) => this.hasValidPath(file.path))
-      .map((file) => this.analyzeFile(file.path, file.content, request))
-      .sort((left, right) => right.score - left.score);
+    for (const file of files) {
+      options?.signal?.throwIfAborted();
 
-    const filesWithIssues = results.filter((result) => result.smellCount > 0).length;
-    const highestSeverity = this.resolveHighestSeverity(results.map((result) => result.severity));
-    const topRisks = results
+      if (!this.hasValidPath(file.path)) {
+        continue;
+      }
+
+      results.push(this.analyzeFile(file.path, file.content, request, options));
+    }
+
+    const sortedResults = results.sort((left, right) => right.score - left.score);
+    const filesWithIssues = sortedResults.filter((result) => result.smellCount > 0).length;
+    const highestSeverity = this.resolveHighestSeverity(sortedResults.map((result) => result.severity));
+    const topRisks = sortedResults
       .filter((result) => result.score > 0 && result.smellCount > 0)
       .slice(0, 5);
 
     return {
-      filesAnalyzed: results.length,
+      filesAnalyzed: sortedResults.length,
       filesWithIssues,
       highestSeverity,
-      results,
+      results: sortedResults,
       topRisks,
-      summary: this.buildSummary(results.length, filesWithIssues, highestSeverity)
+      summary: this.buildSummary(sortedResults.length, filesWithIssues, highestSeverity)
     };
   }
 
   private analyzeFile(
     path: string,
     content: string,
-    request: BatchAnalysisRequest
+    request: BatchAnalysisRequest,
+    options?: AnalysisOptions
   ): FileAnalysisResult {
     if (!content?.trim()) {
       return {
@@ -78,11 +87,15 @@ export class QueryBatchAnalysisService {
       };
     }
 
-    const analysis = this.analysisService.analyze({
-      code: content,
-      provider: request.provider,
-      context: request.context
-    });
+    const analysis = this.analysisService.analyze(
+      {
+        code: content,
+        provider: request.provider,
+        context: request.context,
+        filePath: path
+      },
+      options
+    );
 
     const score = this.calculateScore(analysis.smells);
     const highImpactSmells = this.resolveHighImpactSmells(analysis.smells);
@@ -95,7 +108,8 @@ export class QueryBatchAnalysisService {
       highImpactSmells,
       smells: analysis.smells,
       recommendations: analysis.recommendations,
-      manualReviewRequired: analysis.manualReviewRequired
+      manualReviewRequired: analysis.manualReviewRequired,
+      ...(analysis.truncated ? { truncated: true } : {})
     };
   }
 

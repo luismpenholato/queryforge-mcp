@@ -1,36 +1,46 @@
 import { QueryRule } from '../domain/query-rule.js';
+import { createReviewRequiredFix } from '../domain/query-smell.js';
 import { createSmell, hasWhereClause } from './rule-helpers.js';
+import { findWherePatternMatches } from './support/where-range.js';
 
-const STRING_TRANSFORM_PATTERN = /\.(ToLower|ToUpper|Trim|Substring)\s*\(/;
+const STRING_TRANSFORM_PATTERN = /\.(ToLower|ToUpper|Trim|Substring)\s*\([^)]*\)/;
 
 export const stringTransformOnColumnFilterRule: QueryRule = {
   code: 'STRING_TRANSFORM_ON_COLUMN_FILTER',
 
   analyze(request) {
-    if (!hasWhereClause(request.code, STRING_TRANSFORM_PATTERN)) {
+    if (!hasWhereClause(request.code, /\.(ToLower|ToUpper|Trim|Substring)\s*\(/)) {
       return [];
     }
 
-    return [
+    const matches = findWherePatternMatches(request.code, STRING_TRANSFORM_PATTERN);
+
+    return matches.map((match) =>
       createSmell({
         code: 'STRING_TRANSFORM_ON_COLUMN_FILTER',
-        title: 'Transformação de string em coluna no filtro',
+        title: 'String transform on column in filter',
         severity: 'high',
         category: 'sargability',
-        message:
-          'A query aplica ToLower, ToUpper, Trim ou Substring em coluna dentro do Where.',
+        message: 'The query applies ToLower, ToUpper, Trim or Substring on a column inside Where.',
         whyItMatters:
-          'Funções em coluna textual costumam gerar SQL não sargável e impedem uso eficiente de índice.',
+          'Functions on text columns often produce non-sargable SQL and prevent efficient index usage.',
         suggestion:
-          'Prefira colunas normalizadas, collation case-insensitive, colunas computadas persistidas ou estratégia indexada específica do provider.',
+          'Prefer normalized columns, case-insensitive collation, persisted computed columns, or a provider-specific indexed strategy.',
         rewritePlan: [
-          'Identifique a transformação aplicada na coluna.',
-          'Mova normalização para escrita (coluna persistida) ou use collation do banco.',
-          'Remova transformação do predicado Where.'
+          'Identify the transform applied to the column.',
+          'Move normalization to write time (persisted column) or use database collation.',
+          'Remove the transform from the Where predicate.'
         ],
         safeAutoFix: false,
-        confidence: 0.87
+        confidence: 0.87,
+        range: match.range,
+        fixes: [
+          createReviewRequiredFix(
+            'remove-string-transform-from-filter',
+            'Remove string transform from the filter and use a normalized column or collation'
+          )
+        ]
       })
-    ];
+    );
   }
 };
