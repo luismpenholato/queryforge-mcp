@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.1] - 2026-07-12
+
+### Added
+
+- Added official documentation for the QueryForge ecosystem.
+- Added QueryForge Editor installation and usage guidance.
+- Added links between QueryForge MCP and QueryForge Editor.
+- Added ecosystem information to the community and support sections.
+
+### Changed
+
+- Updated the public API description to identify QueryForge Editor as an official consumer.
+- Clarified the relationship between QueryForge Editor and QueryForge MCP/Core.
+- Updated privacy documentation to describe the Editor's local-first integration.
+- Updated the roadmap now that QueryForge Editor is available as a separate project.
+- Updated pinned MCP installation examples to version `0.7.1`.
+
+### Compatibility
+
+- Preserved all MCP tools and stdio server behavior.
+- Preserved the public programmatic API and npm package entry points.
+- No query rules or analysis behavior changed.
+
 ## [0.7.0] - 2026-07-11
 
 ### Added
@@ -244,6 +267,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation: README, examples, query smells, limitations, production usage, contributing
 - Test suite (unit + integration) with .NET fixtures
 
+[0.7.1]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.7.1
 [0.7.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.7.0
 [0.6.2]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.6.2
 [0.6.1]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.6.1
