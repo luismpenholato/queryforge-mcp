@@ -1,6 +1,6 @@
 {
   "name": "@luispenholato/queryforge-mcp",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Local-first MCP server and TypeScript library for reviewing .NET LINQ, Entity Framework and Dapper query performance.",
   "type": "module",
   "main": "./dist/public-api.js",

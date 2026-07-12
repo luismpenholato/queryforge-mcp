@@ -13,7 +13,17 @@ QueryForge is a local-first MCP server and programmatic TypeScript library for r
 
 It analyzes C# query snippets and returns conservative suggestions for common performance smells. It is designed for development and code review — not automatic refactoring.
 
-The public API is designed for editor, CLI and CI integrations.
+The public API powers QueryForge Editor and is also designed for CLI, CI and custom integrations.
+
+## QueryForge ecosystem
+
+QueryForge is available through two complementary projects:
+
+- **[QueryForge Editor](https://github.com/luismpenholato/queryforge-editor)** — a free, local-first editor extension with C# diagnostics, detailed hover guidance, safe Quick Fixes, selection analysis and optional analysis on save.
+
+- **QueryForge MCP / Core** — the analysis engine, programmatic TypeScript API and MCP server for agents, editor integrations, CLI tools and automation workflows.
+
+The Editor consumes the QueryForge programmatic API directly and runs analysis locally. It does not start the MCP server or send source code to an external service.
 
 ## What it does not do
 
@@ -40,7 +50,7 @@ Pinned version:
       "command": "npx",
       "args": [
         "-y",
-        "@luispenholato/queryforge-mcp@0.7.0"
+        "@luispenholato/queryforge-mcp@0.7.1"
       ]
     }
   }
@@ -52,6 +62,22 @@ Pinned version:
 ```bash
 npm install @luispenholato/queryforge-mcp
 ```
+
+## Use QueryForge in your editor
+
+Prefer reviewing LINQ and Entity Framework queries directly in your editor?
+
+[QueryForge Editor](https://github.com/luismpenholato/queryforge-editor) provides:
+
+- diagnostics in the editor and Problems Panel;
+- detailed explanations, suggestions and confidence levels;
+- structured safe Quick Fixes;
+- analysis of the current C# file or selected code;
+- optional analysis when C# files are saved;
+- a built-in fictional example and Getting Started walkthrough;
+- support for VS Code and compatible editors.
+
+The extension imports `@luispenholato/queryforge-mcp` as a local library. It does not create an MCP subprocess, connect to databases or execute SQL.
 
 ## Programmatic API
 
@@ -105,6 +131,8 @@ for (const smell of result.smells) {
 
 QueryForge analyzes the code supplied by the local consumer. It does not connect to a database, upload source code or execute SQL as part of analysis.
 
+QueryForge Editor follows the same local-first model and uses this API directly inside the extension host.
+
 ## MCP tools
 
 | Tool | Description |
@@ -142,7 +170,7 @@ Pinned version:
       "command": "npx",
       "args": [
         "-y",
-        "@luispenholato/queryforge-mcp@0.7.0"
+        "@luispenholato/queryforge-mcp@0.7.1"
       ]
     }
   }
@@ -467,8 +495,18 @@ src/
 
 Use fictional English domain names only (`Product`, `Category`, `Order`, `Customer`, `Invoice`, `Review`, `Store`). Avoid company-specific or Portuguese domain names in examples.
 
+## Ecosystem
+
+| Project | Purpose |
+| --- | --- |
+| [QueryForge Editor](https://github.com/luismpenholato/queryforge-editor) | Editor diagnostics, hover guidance and structured safe fixes |
+| [QueryForge MCP](https://github.com/luismpenholato/queryforge-mcp) | Analysis engine, programmatic API and MCP server |
+
+Both projects are free, open source and local-first.
+
 ## Community
 
+- [QueryForge Editor](https://github.com/luismpenholato/queryforge-editor)
 - [Contributing](CONTRIBUTING.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Security Policy](SECURITY.md)
@@ -480,9 +518,18 @@ Pull requests run CI (`npm run validate`).
 
 ## Support the project
 
-QueryForge is free, open source and local-first.
+QueryForge Editor and QueryForge MCP are free, open source and local-first.
 
-If it helps you review LINQ, Entity Framework or Dapper queries, you can support its continued development through [GitHub Sponsors](https://github.com/sponsors/luismpenholato).
+If these tools improve your LINQ, Entity Framework or Dapper development workflow, consider supporting their continued development through [GitHub Sponsors](https://github.com/sponsors/luismpenholato).
+
+Your support helps fund:
+
+- analyzer and diagnostic improvements;
+- new structured safe Quick Fixes;
+- editor, MCP and developer tooling compatibility;
+- documentation and testing;
+- issue resolution;
+- long-term open-source maintenance.
 
 ## Release process
 
@@ -522,8 +569,9 @@ npm run release:notes -- v0.8.0
 
 ## Roadmap
 
-- **v0.8.0** — Dapper safety rules, expanded aggregation smells
-- **Future** — VS Code/Cursor extension, optional Roslyn-based analysis, guarded `apply_patch`
+- **v0.8.0** — Dapper safety rules and expanded aggregation smells.
+- **QueryForge Editor** — continue expanding diagnostics, onboarding and structured safe fixes through the public API.
+- **Future** — optional Roslyn-assisted analysis, additional integrations and guarded patch workflows.
 
 ## License
 

@@ -86,10 +86,10 @@ describe('extract-changelog script', () => {
 
 describe('validate-release-version script', () => {
   it('should validate the current release metadata', () => {
-    const result = runScript('scripts/validate-release-version.mjs', ['v0.7.0']);
+    const result = runScript('scripts/validate-release-version.mjs', ['v0.7.1']);
 
     expect(result.status).toBe(0);
-    expect(result.stdout).toContain('Release version v0.7.0 is consistent');
+    expect(result.stdout).toContain('Release version v0.7.1 is consistent');
     expect(result.stderr).toBe('');
   });
 
