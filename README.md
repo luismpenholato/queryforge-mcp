@@ -15,6 +15,8 @@ It analyzes C# query snippets and returns conservative suggestions for common pe
 
 The public API powers QueryForge Editor and is also designed for CLI, CI and custom integrations.
 
+[Install as MCP](#install-as-mcp) · [TypeScript API](#programmatic-api) · [Tools](#mcp-tools) · [Examples](#example-usage) · [Rules](#rules) · [Development](#install-from-source)
+
 ## QueryForge ecosystem
 
 QueryForge is available through two complementary projects:
@@ -37,25 +39,26 @@ Validate every suggestion with generated SQL, tests, and real data when possible
 
 ## Install as MCP
 
+Requires Node.js 20+ and npm, as declared in [package.json](package.json).
+
 ```bash
 npx -y @luispenholato/queryforge-mcp
 ```
 
-Pinned version:
+For clients that use an `mcpServers` JSON configuration, register QueryForge with a pinned version:
 
 ```json
 {
   "mcpServers": {
     "queryforge": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@luispenholato/queryforge-mcp@0.7.1"
-      ]
+      "args": ["-y", "@luispenholato/queryforge-mcp@0.7.1"]
     }
   }
 }
 ```
+
+To use the latest published version instead, remove `@0.7.1` from the package name in `args`. Use the configuration format supported by your MCP client.
 
 ## Install as library
 
@@ -63,29 +66,13 @@ Pinned version:
 npm install @luispenholato/queryforge-mcp
 ```
 
-## Use QueryForge in your editor
-
-Prefer reviewing LINQ and Entity Framework queries directly in your editor?
-
-[QueryForge Editor](https://github.com/luismpenholato/queryforge-editor) provides:
-
-- diagnostics in the editor and Problems Panel;
-- detailed explanations, suggestions and confidence levels;
-- structured safe Quick Fixes;
-- analysis of the current C# file or selected code;
-- optional analysis when C# files are saved;
-- a built-in fictional example and Getting Started walkthrough;
-- support for VS Code and compatible editors.
-
-The extension imports `@luispenholato/queryforge-mcp` as a local library. It does not create an MCP subprocess, connect to databases or execute SQL.
-
 ## Programmatic API
 
 ```ts
 import {
   QueryAnalysisService,
-  type QueryAnalysisRequest
-} from '@luispenholato/queryforge-mcp';
+  type QueryAnalysisRequest,
+} from "@luispenholato/queryforge-mcp";
 
 const service = new QueryAnalysisService();
 
@@ -95,9 +82,9 @@ const request: QueryAnalysisRequest = {
       .Where(product => product.IsActive)
       .CountAsync() > 0;
   `,
-  provider: 'ef-core',
-  filePath: 'Features/Products/ProductService.cs',
-  languageId: 'csharp'
+  provider: "ef-core",
+  filePath: "Features/Products/ProductService.cs",
+  languageId: "csharp",
 };
 
 const result = service.analyze(request);
@@ -108,7 +95,7 @@ for (const smell of result.smells) {
     severity: smell.severity,
     range: smell.range,
     fingerprint: smell.fingerprint,
-    fixes: smell.fixes
+    fixes: smell.fixes,
   });
 }
 ```
@@ -133,49 +120,19 @@ QueryForge analyzes the code supplied by the local consumer. It does not connect
 
 QueryForge Editor follows the same local-first model and uses this API directly inside the extension host.
 
+When using an MCP client, also review that client's data handling: QueryForge's local analysis does not determine where the client sends the conversation or code snippets.
+
 ## MCP tools
 
-| Tool | Description |
-| --- | --- |
-| `inspect_project_stack` | Detect .NET runtime, EF/Dapper usage, and database providers from pasted `.csproj` content |
-| `analyze_query` | Detect performance smells and return a summary with severity |
-| `analyze_query_batch` | Analyze multiple C# files/snippets and rank the riskiest ones |
-| `suggest_ef_rewrite` | Conservative EF Core rewrite advisor (safe auto-fixes + structured plan, no file changes) |
-| `suggest_dapper_alternative` | Suggest a conservative Dapper alternative for read-only queries |
-| `suggest_index_candidates` | Suggest conservative index candidates from query filters and ordering (not definitive indexes) |
-| `generate_review_report` | Generate a markdown review report with checklist |
-
-## Cursor MCP config
-
-```json
-{
-  "mcpServers": {
-    "queryforge": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@luispenholato/queryforge-mcp"
-      ]
-    }
-  }
-}
-```
-
-Pinned version:
-
-```json
-{
-  "mcpServers": {
-    "queryforge": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@luispenholato/queryforge-mcp@0.7.1"
-      ]
-    }
-  }
-}
-```
+| Tool                         | Description                                                                                    |
+| ---------------------------- | ---------------------------------------------------------------------------------------------- |
+| `inspect_project_stack`      | Detect .NET runtime, EF/Dapper usage, and database providers from pasted `.csproj` content     |
+| `analyze_query`              | Detect performance smells and return a summary with severity                                   |
+| `analyze_query_batch`        | Analyze multiple C# files/snippets and rank the riskiest ones                                  |
+| `suggest_ef_rewrite`         | Conservative EF Core rewrite advisor (safe auto-fixes + structured plan, no file changes)      |
+| `suggest_dapper_alternative` | Suggest a conservative Dapper alternative for read-only queries                                |
+| `suggest_index_candidates`   | Suggest conservative index candidates from query filters and ordering (not definitive indexes) |
+| `generate_review_report`     | Generate a markdown review report with checklist                                               |
 
 ## Install from source
 
@@ -197,9 +154,9 @@ npm run build
 npm start
 ```
 
-## Cursor configuration
+## Local MCP configuration
 
-Build first, then add to `.cursor/mcp.json` or Cursor MCP settings.
+For a source checkout, build first, then register `node` with the absolute path to `dist/index.js`. In Cursor, the JSON below belongs in `.cursor/mcp.json` or the MCP settings.
 
 **Windows:**
 
@@ -208,9 +165,7 @@ Build first, then add to `.cursor/mcp.json` or Cursor MCP settings.
   "mcpServers": {
     "queryforge": {
       "command": "node",
-      "args": [
-        "C:\\Users\\admin\\Documents\\projects\\queryforge-mcp\\dist\\index.js"
-      ]
+      "args": ["C:\\projects\\queryforge-mcp\\dist\\index.js"]
     }
   }
 }
@@ -223,15 +178,13 @@ Build first, then add to `.cursor/mcp.json` or Cursor MCP settings.
   "mcpServers": {
     "queryforge": {
       "command": "node",
-      "args": [
-        "/home/admin/projects/queryforge-mcp/dist/index.js"
-      ]
+      "args": ["/home/admin/projects/queryforge-mcp/dist/index.js"]
     }
   }
 }
 ```
 
-Replace the path with your absolute path to `dist/index.js`. Restart Cursor after changing MCP configuration.
+Replace the example path with your absolute path to `dist/index.js`, then reload the MCP server in your client.
 
 ## Example usage
 
@@ -392,70 +345,70 @@ QueryForge uses conservative, regex-based heuristics. It detects **possible** is
 
 ### Core rules
 
-| Code | Severity | Description |
-| --- | --- | --- |
-| `TO_LIST_BEFORE_SELECT` | high | Materialization before projection |
-| `MISSING_AS_NO_TRACKING` | medium | Read-only query without `AsNoTracking` |
-| `COUNT_GREATER_THAN_ZERO` | medium | Using `Count` instead of `Any` for existence check |
-| `PAGINATION_WITHOUT_ORDER_BY` | high | `Skip`/`Take` without `OrderBy` |
-| `UNNECESSARY_INCLUDE_WITH_PROJECTION` | medium | `Include` with `Select` projection |
-| `FIRST_WITHOUT_ORDER_BY` | low | `First` without explicit ordering |
+| Code                                  | Severity | Description                                        |
+| ------------------------------------- | -------- | -------------------------------------------------- |
+| `TO_LIST_BEFORE_SELECT`               | high     | Materialization before projection                  |
+| `MISSING_AS_NO_TRACKING`              | medium   | Read-only query without `AsNoTracking`             |
+| `COUNT_GREATER_THAN_ZERO`             | medium   | Using `Count` instead of `Any` for existence check |
+| `PAGINATION_WITHOUT_ORDER_BY`         | high     | `Skip`/`Take` without `OrderBy`                    |
+| `UNNECESSARY_INCLUDE_WITH_PROJECTION` | medium   | `Include` with `Select` projection                 |
+| `FIRST_WITHOUT_ORDER_BY`              | low      | `First` without explicit ordering                  |
 
 ### Advanced LINQ/EF performance rules
 
 #### Sargability / index usage
 
-| Code | Severity | Description |
-| --- | --- | --- |
-| `FUNCTION_ON_COLUMN_FILTER` | high | DateTime members (`.Year`, `.Month`, `.Day`, etc.) inside `Where` |
-| `TO_STRING_IN_QUERY_FILTER` | high | `ToString()` inside `Where` |
-| `STRING_TRANSFORM_ON_COLUMN_FILTER` | high | `ToLower`/`ToUpper`/`Trim`/`Substring` on column inside `Where` |
-| `CONTAINS_ON_CONVERTED_VALUE` | high | `ToString().Contains(...)` inside `Where` |
-| `CONTAINS_ON_STRING_COLUMN` | medium | `Contains` on string column (may become `LIKE '%term%'`) |
+| Code                                | Severity | Description                                                       |
+| ----------------------------------- | -------- | ----------------------------------------------------------------- |
+| `FUNCTION_ON_COLUMN_FILTER`         | high     | DateTime members (`.Year`, `.Month`, `.Day`, etc.) inside `Where` |
+| `TO_STRING_IN_QUERY_FILTER`         | high     | `ToString()` inside `Where`                                       |
+| `STRING_TRANSFORM_ON_COLUMN_FILTER` | high     | `ToLower`/`ToUpper`/`Trim`/`Substring` on column inside `Where`   |
+| `CONTAINS_ON_CONVERTED_VALUE`       | high     | `ToString().Contains(...)` inside `Where`                         |
+| `CONTAINS_ON_STRING_COLUMN`         | medium   | `Contains` on string column (may become `LIKE '%term%'`)          |
 
 #### Materialization / client-side evaluation
 
-| Code | Severity | Description |
-| --- | --- | --- |
-| `TO_LIST_BEFORE_WHERE` | high | `ToList`/`ToListAsync` before `Where` |
-| `TO_LIST_BEFORE_ORDER_BY` | high | `ToList`/`ToListAsync` before `OrderBy` |
-| `TO_LIST_BEFORE_SKIP_TAKE` | high | `ToList`/`ToListAsync` before `Skip`/`Take` |
-| `AS_ENUMERABLE_BEFORE_QUERY_OPERATORS` | high | `AsEnumerable` before query operators |
-| `CLIENT_SIDE_METHOD_IN_WHERE` | medium | Custom method call inside `Where` |
+| Code                                   | Severity | Description                                 |
+| -------------------------------------- | -------- | ------------------------------------------- |
+| `TO_LIST_BEFORE_WHERE`                 | high     | `ToList`/`ToListAsync` before `Where`       |
+| `TO_LIST_BEFORE_ORDER_BY`              | high     | `ToList`/`ToListAsync` before `OrderBy`     |
+| `TO_LIST_BEFORE_SKIP_TAKE`             | high     | `ToList`/`ToListAsync` before `Skip`/`Take` |
+| `AS_ENUMERABLE_BEFORE_QUERY_OPERATORS` | high     | `AsEnumerable` before query operators       |
+| `CLIENT_SIDE_METHOD_IN_WHERE`          | medium   | Custom method call inside `Where`           |
 
 #### Pagination / ordering / volume
 
-| Code | Severity | Description |
-| --- | --- | --- |
-| `LARGE_TAKE` | medium | `Take` >= 10000 |
-| `LARGE_TAKE_WITH_ORDER_BY` | medium | Large `Take` combined with `OrderBy` |
-| `MULTIPLE_ORDER_BY` | medium | Multiple `OrderBy` calls (second overrides first) |
+| Code                       | Severity | Description                                       |
+| -------------------------- | -------- | ------------------------------------------------- |
+| `LARGE_TAKE`               | medium   | `Take` >= 10000                                   |
+| `LARGE_TAKE_WITH_ORDER_BY` | medium   | Large `Take` combined with `OrderBy`              |
+| `MULTIPLE_ORDER_BY`        | medium   | Multiple `OrderBy` calls (second overrides first) |
 
 #### Projection / includes
 
-| Code | Severity | Description |
-| --- | --- | --- |
-| `MULTIPLE_COLLECTION_INCLUDES` | medium | Two or more `Include`/`ThenInclude` calls |
+| Code                           | Severity | Description                               |
+| ------------------------------ | -------- | ----------------------------------------- |
+| `MULTIPLE_COLLECTION_INCLUDES` | medium   | Two or more `Include`/`ThenInclude` calls |
 
 #### Redundant filters
 
-| Code | Severity | Description |
-| --- | --- | --- |
-| `REDUNDANT_MONTH_RANGE_FILTER` | low | `new[] {1..12}.Contains(x.Date.Month)` |
-| `DUPLICATED_PREDICATE` | low | Repeated condition inside the same `Where` |
+| Code                           | Severity | Description                                |
+| ------------------------------ | -------- | ------------------------------------------ |
+| `REDUNDANT_MONTH_RANGE_FILTER` | low      | `new[] {1..12}.Contains(x.Date.Month)`     |
+| `DUPLICATED_PREDICATE`         | low      | Repeated condition inside the same `Where` |
 
 ### Structural query smells
 
 Structural smells target query shape problems common in handlers, repositories and application services.
 
-| Code | Severity | Description |
-| --- | --- | --- |
-| `N_PLUS_ONE_QUERY_IN_LOOP` | high | EF/LINQ query executed inside `foreach`/`for`/`while` |
-| `MULTIPLE_ROUND_TRIPS_IN_LOOP` | high | Two or more queries inside the same loop body |
-| `CARTESIAN_PRODUCT_QUERY` | high | Multiple `from` clauses or chained `SelectMany` without explicit join |
-| `CORRELATED_SUBQUERY_IN_PROJECTION` | medium | `Count`/`Sum`/`Any`/`Average` correlated inside `Select` |
-| `IMPLICIT_CONVERSION_IN_FILTER` | high | `ToString`/`Parse`/`Convert` inside `Where` |
-| `FULL_ENTITY_MATERIALIZATION` | medium | `ToList`/`ToListAsync` without prior `Select` projection |
+| Code                                | Severity | Description                                                           |
+| ----------------------------------- | -------- | --------------------------------------------------------------------- |
+| `N_PLUS_ONE_QUERY_IN_LOOP`          | high     | EF/LINQ query executed inside `foreach`/`for`/`while`                 |
+| `MULTIPLE_ROUND_TRIPS_IN_LOOP`      | high     | Two or more queries inside the same loop body                         |
+| `CARTESIAN_PRODUCT_QUERY`           | high     | Multiple `from` clauses or chained `SelectMany` without explicit join |
+| `CORRELATED_SUBQUERY_IN_PROJECTION` | medium   | `Count`/`Sum`/`Any`/`Average` correlated inside `Select`              |
+| `IMPLICIT_CONVERSION_IN_FILTER`     | high     | `ToString`/`Parse`/`Convert` inside `Where`                           |
+| `FULL_ENTITY_MATERIALIZATION`       | medium   | `ToList`/`ToListAsync` without prior `Select` projection              |
 
 `analyze_query_batch` uses these rules (with combo bonuses) to prioritize the riskiest files first — N+1 patterns, cartesian products and implicit conversions score higher than tracking-only issues.
 
@@ -465,18 +418,18 @@ Each smell may include `category`, `whyItMatters`, `rewritePlan`, and `safeAutoF
 
 The `examples/` folder defines canonical query samples. Each file has a matching test in `tests/examples/` that asserts the expected smell codes — this is the product contract for regression safety.
 
-| Example | Scenario | Expected smells |
-| --- | --- | --- |
-| `bad-ef-query.cs` | Include + early `ToList` before projection | `TO_LIST_BEFORE_SELECT`, `UNNECESSARY_INCLUDE_WITH_PROJECTION`, `MISSING_AS_NO_TRACKING` |
-| `advanced-linq-query.cs` | Mixed sargability, pagination and tracking issues (multiple `Where` calls) | `FUNCTION_ON_COLUMN_FILTER`, `TO_STRING_IN_QUERY_FILTER`, `CONTAINS_ON_CONVERTED_VALUE`, `STRING_TRANSFORM_ON_COLUMN_FILTER`, `CONTAINS_ON_STRING_COLUMN`, `REDUNDANT_MONTH_RANGE_FILTER`, `LARGE_TAKE`, `LARGE_TAKE_WITH_ORDER_BY`, `MISSING_AS_NO_TRACKING` |
-| `function-on-column-query.cs` | Single multiline `Where` with `.Year`, `.Month` and `ToString().Contains` | `FUNCTION_ON_COLUMN_FILTER`, `TO_STRING_IN_QUERY_FILTER`, `CONTAINS_ON_CONVERTED_VALUE`, `REDUNDANT_MONTH_RANGE_FILTER`, `LARGE_TAKE`, `LARGE_TAKE_WITH_ORDER_BY`, `MISSING_AS_NO_TRACKING` |
-| `materialization-before-filter.cs` | Full table load then filter/sort/page in memory | `TO_LIST_BEFORE_WHERE`, `TO_LIST_BEFORE_ORDER_BY`, `TO_LIST_BEFORE_SKIP_TAKE`, `TO_LIST_BEFORE_SELECT` |
-| `pagination-heavy-query.cs` | Unstable ordering and large export batch | `MULTIPLE_ORDER_BY`, `LARGE_TAKE`, `LARGE_TAKE_WITH_ORDER_BY` |
-| `multiple-includes-query.cs` | Cartesian-prone includes with DTO projection | `MULTIPLE_COLLECTION_INCLUDES`, `UNNECESSARY_INCLUDE_WITH_PROJECTION`, `MISSING_AS_NO_TRACKING` |
-| `client-side-method-query.cs` | Custom helpers inside `Where` predicates | `CLIENT_SIDE_METHOD_IN_WHERE` |
-| `string-search-query.cs` | Non-sargable text search patterns | `STRING_TRANSFORM_ON_COLUMN_FILTER`, `CONTAINS_ON_STRING_COLUMN`, `TO_STRING_IN_QUERY_FILTER`, `CONTAINS_ON_CONVERTED_VALUE` |
-| `structural-query-smells.cs` | N+1, cartesian product, correlated subquery, implicit conversion | `N_PLUS_ONE_QUERY_IN_LOOP`, `MULTIPLE_ROUND_TRIPS_IN_LOOP`, `CARTESIAN_PRODUCT_QUERY`, `CORRELATED_SUBQUERY_IN_PROJECTION`, `IMPLICIT_CONVERSION_IN_FILTER`, `DUPLICATED_PREDICATE`, `FULL_ENTITY_MATERIALIZATION` |
-| `index-candidate-query.cs` | Sargable filters + ordering for index candidate generation | Composite candidate with `CustomerId`, `Status`, `OrderedAt`, `Id` |
+| Example                            | Scenario                                                                   | Expected smells                                                                                                                                                                                                                                               |
+| ---------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bad-ef-query.cs`                  | Include + early `ToList` before projection                                 | `TO_LIST_BEFORE_SELECT`, `UNNECESSARY_INCLUDE_WITH_PROJECTION`, `MISSING_AS_NO_TRACKING`                                                                                                                                                                      |
+| `advanced-linq-query.cs`           | Mixed sargability, pagination and tracking issues (multiple `Where` calls) | `FUNCTION_ON_COLUMN_FILTER`, `TO_STRING_IN_QUERY_FILTER`, `CONTAINS_ON_CONVERTED_VALUE`, `STRING_TRANSFORM_ON_COLUMN_FILTER`, `CONTAINS_ON_STRING_COLUMN`, `REDUNDANT_MONTH_RANGE_FILTER`, `LARGE_TAKE`, `LARGE_TAKE_WITH_ORDER_BY`, `MISSING_AS_NO_TRACKING` |
+| `function-on-column-query.cs`      | Single multiline `Where` with `.Year`, `.Month` and `ToString().Contains`  | `FUNCTION_ON_COLUMN_FILTER`, `TO_STRING_IN_QUERY_FILTER`, `CONTAINS_ON_CONVERTED_VALUE`, `REDUNDANT_MONTH_RANGE_FILTER`, `LARGE_TAKE`, `LARGE_TAKE_WITH_ORDER_BY`, `MISSING_AS_NO_TRACKING`                                                                   |
+| `materialization-before-filter.cs` | Full table load then filter/sort/page in memory                            | `TO_LIST_BEFORE_WHERE`, `TO_LIST_BEFORE_ORDER_BY`, `TO_LIST_BEFORE_SKIP_TAKE`, `TO_LIST_BEFORE_SELECT`                                                                                                                                                        |
+| `pagination-heavy-query.cs`        | Unstable ordering and large export batch                                   | `MULTIPLE_ORDER_BY`, `LARGE_TAKE`, `LARGE_TAKE_WITH_ORDER_BY`                                                                                                                                                                                                 |
+| `multiple-includes-query.cs`       | Cartesian-prone includes with DTO projection                               | `MULTIPLE_COLLECTION_INCLUDES`, `UNNECESSARY_INCLUDE_WITH_PROJECTION`, `MISSING_AS_NO_TRACKING`                                                                                                                                                               |
+| `client-side-method-query.cs`      | Custom helpers inside `Where` predicates                                   | `CLIENT_SIDE_METHOD_IN_WHERE`                                                                                                                                                                                                                                 |
+| `string-search-query.cs`           | Non-sargable text search patterns                                          | `STRING_TRANSFORM_ON_COLUMN_FILTER`, `CONTAINS_ON_STRING_COLUMN`, `TO_STRING_IN_QUERY_FILTER`, `CONTAINS_ON_CONVERTED_VALUE`                                                                                                                                  |
+| `structural-query-smells.cs`       | N+1, cartesian product, correlated subquery, implicit conversion           | `N_PLUS_ONE_QUERY_IN_LOOP`, `MULTIPLE_ROUND_TRIPS_IN_LOOP`, `CARTESIAN_PRODUCT_QUERY`, `CORRELATED_SUBQUERY_IN_PROJECTION`, `IMPLICIT_CONVERSION_IN_FILTER`, `DUPLICATED_PREDICATE`, `FULL_ENTITY_MATERIALIZATION`                                            |
+| `index-candidate-query.cs`         | Sargable filters + ordering for index candidate generation                 | Composite candidate with `CustomerId`, `Status`, `OrderedAt`, `Id`                                                                                                                                                                                            |
 
 Run `npm test` to validate all contracts. Use these samples when evaluating QueryForge output in Cursor or other MCP clients.
 
@@ -494,15 +447,6 @@ src/
 ## Examples in tests and docs
 
 Use fictional English domain names only (`Product`, `Category`, `Order`, `Customer`, `Invoice`, `Review`, `Store`). Avoid company-specific or Portuguese domain names in examples.
-
-## Ecosystem
-
-| Project | Purpose |
-| --- | --- |
-| [QueryForge Editor](https://github.com/luismpenholato/queryforge-editor) | Editor diagnostics, hover guidance and structured safe fixes |
-| [QueryForge MCP](https://github.com/luismpenholato/queryforge-mcp) | Analysis engine, programmatic API and MCP server |
-
-Both projects are free, open source and local-first.
 
 ## Community
 
