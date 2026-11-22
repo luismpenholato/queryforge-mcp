@@ -27,6 +27,11 @@ import { correlatedSubqueryInProjectionRule } from './correlated-subquery-in-pro
 import { implicitConversionInFilterRule } from './implicit-conversion-in-filter.rule.js';
 import { duplicatedPredicateRule } from './duplicated-predicate.rule.js';
 import { fullEntityMaterializationRule } from './full-entity-materialization.rule.js';
+import { dapperSelectStarRule } from './dapper-select-star.rule.js';
+import { dapperQueryInLoopRule } from './dapper-query-in-loop.rule.js';
+import { dapperStringConcatSqlRule } from './dapper-string-concat-sql.rule.js';
+import { aggregationAfterMaterializationRule } from './aggregation-after-materialization.rule.js';
+import { groupByAfterToListRule } from './groupby-after-tolist.rule.js';
 
 export const queryRules: QueryRule[] = [
   toListBeforeSelectRule,
@@ -56,5 +61,10 @@ export const queryRules: QueryRule[] = [
   correlatedSubqueryInProjectionRule,
   implicitConversionInFilterRule,
   duplicatedPredicateRule,
-  fullEntityMaterializationRule
+  fullEntityMaterializationRule,
+  dapperSelectStarRule,
+  dapperQueryInLoopRule,
+  dapperStringConcatSqlRule,
+  aggregationAfterMaterializationRule,
+  groupByAfterToListRule
 ];

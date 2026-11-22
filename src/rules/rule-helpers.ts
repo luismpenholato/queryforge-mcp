@@ -24,6 +24,21 @@ export function looksLikeEfQuery(code: string): boolean {
   return /_context\.|DbContext|\.Set<|\.Where\s*\(|\.Select\s*\(|\.Include\s*\(/.test(code);
 }
 
+export const DAPPER_CALL_PATTERN =
+  /\.(?:Query(?:Async|First(?:OrDefault)?(?:Async)?|Single(?:OrDefault)?(?:Async)?)?|Execute(?:Async|Scalar(?:Async)?)?)\s*(?:<[^>\n]*>)?\s*\(/;
+
+export function looksLikeDapperQuery(code: string): boolean {
+  return (
+    /\bDapper\b/.test(code) ||
+    DAPPER_CALL_PATTERN.test(code) ||
+    /IDbConnection|SqlConnection|NpgsqlConnection/.test(code)
+  );
+}
+
+export function hasDapperCallInLoop(code: string): boolean {
+  return extractLoopBodies(code).some((body) => DAPPER_CALL_PATTERN.test(body));
+}
+
 export function extractWhereBodies(code: string): string[] {
   const bodies: string[] = [];
   const wherePattern = /\.Where\s*\(/g;

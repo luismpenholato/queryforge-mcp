@@ -25,7 +25,7 @@ QueryForge is available through two complementary projects:
 
 | Piece | Role | Package / ID |
 | ----- | ---- | ------------ |
-| **QueryForge MCP / Core** (this repo) | Analysis engine + MCP server + TypeScript API | `@luispenholato/queryforge-mcp@0.7.1` |
+| **QueryForge MCP / Core** (this repo) | Analysis engine + MCP server + TypeScript API | `@luispenholato/queryforge-mcp@0.8.0` |
 | **[QueryForge Editor](https://github.com/luismpenholato/queryforge-editor)** | Free editor extension (diagnostics, hover, safe Quick Fixes) | `queryforge-tools.queryforge-editor@0.1.2` |
 
 The Editor embeds this library locally. It does not start the MCP server or send source code to an external service.
@@ -34,6 +34,7 @@ The Editor embeds this library locally. It does not start the MCP server or send
 
 | Core | Recommended Editor |
 | ---- | ------------------ |
+| `0.8.0` | `0.1.2` (`^0.7.1`, compatible; bump Editor dep in a follow-up) |
 | `0.7.1` | `0.1.2` (`^0.7.1`) |
 | `0.7.0` | `0.1.1` (`^0.7.0`) |
 
@@ -77,13 +78,13 @@ For clients that use an `mcpServers` JSON configuration, register QueryForge wit
   "mcpServers": {
     "queryforge": {
       "command": "npx",
-      "args": ["-y", "@luispenholato/queryforge-mcp@0.7.1"]
+      "args": ["-y", "@luispenholato/queryforge-mcp@0.8.0"]
     }
   }
 }
 ```
 
-To use the latest published version instead, remove `@0.7.1` from the package name in `args`. Use the configuration format supported by your MCP client.
+To use the latest published version instead, remove `@0.8.0` from the package name in `args`. Use the configuration format supported by your MCP client.
 
 ## Install as library
 
@@ -536,7 +537,7 @@ npm run release:notes -- v0.8.0
 
 ## Roadmap
 
-- **v0.8.0** — Dapper safety rules and expanded aggregation smells.
+- **v0.8.0** — shipped: Dapper safety rules and expanded aggregation smells.
 - **QueryForge Editor** — continue expanding diagnostics, onboarding and structured safe fixes through the public API.
 - **Future** — optional Roslyn-assisted analysis, additional integrations and guarded patch workflows.
 
