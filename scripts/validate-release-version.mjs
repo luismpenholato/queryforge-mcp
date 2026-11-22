@@ -2,6 +2,7 @@
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { ensureChangelogFile } from './ensure-changelog-release-links.mjs';
 
 const tagArg = process.argv[2];
 
@@ -19,7 +20,6 @@ const version = tagArg.slice(1);
 const root = process.cwd();
 const packageJson = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8'));
 const packageLock = JSON.parse(readFileSync(resolve(root, 'package-lock.json'), 'utf8'));
-const changelog = readFileSync(resolve(root, 'CHANGELOG.md'), 'utf8');
 
 if (packageJson.version !== version) {
   console.error(`package.json version ${packageJson.version} does not match tag ${tagArg}.`);
@@ -38,9 +38,18 @@ if (!lockRootPackage || lockRootPackage.version !== version) {
   process.exit(1);
 }
 
+const ensureResult = ensureChangelogFile(resolve(root, 'CHANGELOG.md'));
+if (ensureResult.changed) {
+  console.log(
+    `Auto-added CHANGELOG release link(s): ${ensureResult.added.join(', ')}`,
+  );
+}
+
+const changelog = readFileSync(resolve(root, 'CHANGELOG.md'), 'utf8');
+
 const sectionPattern = new RegExp(
   `^## \\[${version.replace(/\./g, '\\.')}\\] - \\d{4}-\\d{2}-\\d{2}\\s*$`,
-  'm'
+  'm',
 );
 
 if (!sectionPattern.test(changelog)) {
@@ -59,7 +68,7 @@ if (versionOccurrences > 2) {
 const releaseLink = `[${version}]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v${version}`;
 
 if (!changelog.includes(releaseLink)) {
-  console.error(`CHANGELOG.md is missing release link:\n${releaseLink}`);
+  console.error(`CHANGELOG.md is missing release link after auto-ensure:\n${releaseLink}`);
   process.exit(1);
 }
 
@@ -76,7 +85,7 @@ try {
 
   if (serverVersionMatch[1] !== version) {
     console.error(
-      `src/server.ts version ${serverVersionMatch[1]} does not match tag ${tagArg}.`
+      `src/server.ts version ${serverVersionMatch[1]} does not match tag ${tagArg}.`,
     );
     process.exit(1);
   }
