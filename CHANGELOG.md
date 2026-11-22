@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-11-22
+
 ### Added
 
 - Documented Dapper safety and aggregation rule codes in the README rules and false-positive guidance.
@@ -16,6 +18,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Reused the shared Dapper call helper in `DAPPER_QUERY_IN_LOOP` so generic and `QueryMultiple` call shapes stay consistent.
+- Bumped `@modelcontextprotocol/sdk` to `^1.32.2`.
+- Bumped development tooling: `vitest` `^3.2.7`, `tsx` `^4.23.15`, and `@types/node` `^24.19.2`.
+- Updated pinned MCP installation examples and compatibility matrix to version `0.8.1`.
+
+### Compatibility
+
+- Preserved all existing MCP tools and stdio server behavior.
+- Preserved the public programmatic API and npm package entry points.
+- Existing EF/LINQ/Dapper rules keep their previous codes and severity semantics.
 
 ## [0.8.0] - 2026-11-22
 
@@ -300,6 +311,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation: README, examples, query smells, limitations, production usage, contributing
 - Test suite (unit + integration) with .NET fixtures
 
+[0.8.1]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.8.1
 [0.8.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.8.0
 [0.7.1]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.7.1
 [0.7.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.7.0

@@ -25,8 +25,8 @@ QueryForge is available through two complementary projects:
 
 | Piece | Role | Package / ID |
 | ----- | ---- | ------------ |
-| **QueryForge MCP / Core** (this repo) | Analysis engine + MCP server + TypeScript API | `@luispenholato/queryforge-mcp@0.8.0` |
-| **[QueryForge Editor](https://github.com/luismpenholato/queryforge-editor)** | Free editor extension (diagnostics, hover, safe Quick Fixes) | `queryforge-tools.queryforge-editor@0.1.2` |
+| **QueryForge MCP / Core** (this repo) | Analysis engine + MCP server + TypeScript API | `@luispenholato/queryforge-mcp@0.8.1` |
+| **[QueryForge Editor](https://github.com/luismpenholato/queryforge-editor)** | Free editor extension (diagnostics, hover, safe Quick Fixes) | `queryforge-tools.queryforge-editor@0.1.3` |
 
 The Editor embeds this library locally. It does not start the MCP server or send source code to an external service.
 
@@ -34,7 +34,8 @@ The Editor embeds this library locally. It does not start the MCP server or send
 
 | Core | Recommended Editor |
 | ---- | ------------------ |
-| `0.8.0` | `0.1.2` (`^0.7.1`, compatible; bump Editor dep in a follow-up) |
+| `0.8.1` | `0.1.3` (`^0.8.0`, compatible) |
+| `0.8.0` | `0.1.3` (`^0.8.0`, compatible) |
 | `0.7.1` | `0.1.2` (`^0.7.1`) |
 | `0.7.0` | `0.1.1` (`^0.7.0`) |
 
@@ -81,13 +82,13 @@ For clients that use an `mcpServers` JSON configuration, register QueryForge wit
   "mcpServers": {
     "queryforge": {
       "command": "npx",
-      "args": ["-y", "@luispenholato/queryforge-mcp@0.8.0"]
+      "args": ["-y", "@luispenholato/queryforge-mcp@0.8.1"]
     }
   }
 }
 ```
 
-To use the latest published version instead, remove `@0.8.0` from the package name in `args`. Use the configuration format supported by your MCP client.
+To use the latest published version instead, remove `@0.8.1` from the package name in `args`. Use the configuration format supported by your MCP client.
 
 ## Install as library
 
@@ -516,7 +517,7 @@ Optional support through [GitHub Sponsors](https://github.com/sponsors/luismpenh
 
 ## Release process
 
-1. Update `package.json`, `package-lock.json` and `src/server.ts` to the new stable version, for example `0.8.0`.
+1. Update `package.json`, `package-lock.json` and `src/server.ts` to the new stable version, for example `0.8.1`.
 2. Add the matching section to `CHANGELOG.md` and the release link at the bottom.
 3. Run `npm run validate`.
 4. Commit the release changes and merge into `main`.
@@ -534,24 +535,25 @@ If the tag for the current version already exists, the workflow finishes as a no
 Example:
 
 ```text
-version: 0.8.0
+version: 0.8.1
 merge into main
 → validate metadata
 → test, build, validate API, pack and validate tarball
-→ tag v0.8.0
-→ npm @luispenholato/queryforge-mcp@0.8.0
-→ GitHub Release QueryForge MCP v0.8.0
+→ tag v0.8.1
+→ npm @luispenholato/queryforge-mcp@0.8.1
+→ GitHub Release QueryForge MCP v0.8.1
 ```
 
 Useful local helpers:
 
 ```bash
-npm run release:validate -- v0.8.0
-npm run release:notes -- v0.8.0
+npm run release:validate -- v0.8.1
+npm run release:notes -- v0.8.1
 ```
 
 ## Roadmap
 
+- **v0.8.1** — shipped: QueryMultiple coverage, docs polish, and dependency bumps.
 - **v0.8.0** — shipped: Dapper safety rules and expanded aggregation smells.
 - **QueryForge Editor** — continue expanding diagnostics, onboarding and structured safe fixes through the public API.
 - **Future** — optional Roslyn-assisted analysis, additional integrations and guarded patch workflows.
