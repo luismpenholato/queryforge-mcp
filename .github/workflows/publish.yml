@@ -170,7 +170,23 @@ jobs:
 
       - name: Publish to npm
         if: steps.state.outputs.npm_exists != 'true'
-        run: npm publish "${{ steps.pack.outputs.file }}" --access public
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          OUTPUT="$(npm publish "${{ steps.pack.outputs.file }}" --access public 2>&1)"
+          STATUS=$?
+          set -e
+          echo "$OUTPUT"
+          if [ "$STATUS" -eq 0 ]; then
+            exit 0
+          fi
+          # Concurrent release runs can race after the first successful publish.
+          if echo "$OUTPUT" | grep -Eqi 'E409|previously published|Cannot publish over|cannot publish over previously staged'; then
+            echo "Package version already on npm; treating publish as successful."
+            exit 0
+          fi
+          exit "$STATUS"
 
       - name: Create tag
         if: steps.state.outputs.tag_exists != 'true'
