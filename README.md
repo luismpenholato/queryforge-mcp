@@ -15,17 +15,27 @@ It analyzes C# query snippets and returns conservative suggestions for common pe
 
 The public API powers QueryForge Editor and is also designed for CLI, CI and custom integrations.
 
-[Install as MCP](#install-as-mcp) · [TypeScript API](#programmatic-api) · [Tools](#mcp-tools) · [Examples](#example-usage) · [Rules](#rules) · [Development](#install-from-source)
+This is free local developer tooling. GitHub Sponsors is optional support for maintenance — QueryForge is not a Sponsors-gated product.
+
+[Install as MCP](#install-as-mcp) · [TypeScript API](#programmatic-api) · [Tools](#mcp-tools) · [Examples](#example-usage) · [When not to trust a finding](#when-not-to-trust-a-finding) · [Rules](#rules) · [Development](#install-from-source)
 
 ## QueryForge ecosystem
 
 QueryForge is available through two complementary projects:
 
-- **[QueryForge Editor](https://github.com/luismpenholato/queryforge-editor)** — a free, local-first editor extension with C# diagnostics, detailed hover guidance, safe Quick Fixes, selection analysis and optional analysis on save.
+| Piece | Role | Package / ID |
+| ----- | ---- | ------------ |
+| **QueryForge MCP / Core** (this repo) | Analysis engine + MCP server + TypeScript API | `@luispenholato/queryforge-mcp@0.7.1` |
+| **[QueryForge Editor](https://github.com/luismpenholato/queryforge-editor)** | Free editor extension (diagnostics, hover, safe Quick Fixes) | `queryforge-tools.queryforge-editor@0.1.2` |
 
-- **QueryForge MCP / Core** — the analysis engine, programmatic TypeScript API and MCP server for agents, editor integrations, CLI tools and automation workflows.
+The Editor embeds this library locally. It does not start the MCP server or send source code to an external service.
 
-The Editor consumes the QueryForge programmatic API directly and runs analysis locally. It does not start the MCP server or send source code to an external service.
+### Version compatibility
+
+| Core | Recommended Editor |
+| ---- | ------------------ |
+| `0.7.1` | `0.1.2` (`^0.7.1`) |
+| `0.7.0` | `0.1.1` (`^0.7.0`) |
 
 ## What it does not do
 
@@ -36,6 +46,21 @@ The Editor consumes the QueryForge programmatic API directly and runs analysis l
 - Does **not** guarantee performance improvements
 
 Validate every suggestion with generated SQL, tests, and real data when possible.
+
+## When not to trust a finding
+
+QueryForge uses heuristic text analysis, not Roslyn. Treat smells as review prompts:
+
+| Situation | Guidance |
+| --------- | -------- |
+| `MISSING_AS_NO_TRACKING` on write/update paths | Skip when entities will be mutated or intentionally tracked |
+| `FULL_ENTITY_MATERIALIZATION` / broad `ToList` | May be intentional for small sets or caching |
+| `LARGE_TAKE` on exports/admin reports | Often expected; confirm product pagination requirements |
+| Structural N+1 / loop heuristics | Confirm the loop really executes a database query each iteration |
+| Low `confidence` values | Prefer the rewrite plan over any auto-fix |
+| `safety: "review-required"` fixes | Never apply automatically |
+
+Do **not** treat a smell as proof of a production incident without SQL, plans or tests.
 
 ## Install as MCP
 
@@ -462,11 +487,9 @@ Pull requests run CI (`npm run validate`).
 
 ## Support the project
 
-QueryForge Editor and QueryForge MCP are free, open source and local-first.
+QueryForge Editor and QueryForge MCP are free, open source, local-first and fully usable without sponsorship.
 
-If these tools improve your LINQ, Entity Framework or Dapper development workflow, consider supporting their continued development through [GitHub Sponsors](https://github.com/sponsors/luismpenholato).
-
-Your support helps fund:
+Optional support through [GitHub Sponsors](https://github.com/sponsors/luismpenholato) funds continued maintenance:
 
 - analyzer and diagnostic improvements;
 - new structured safe Quick Fixes;
