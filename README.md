@@ -58,6 +58,9 @@ QueryForge uses heuristic text analysis, not Roslyn. Treat smells as review prom
 | `FULL_ENTITY_MATERIALIZATION` / broad `ToList` | May be intentional for small sets or caching |
 | `LARGE_TAKE` on exports/admin reports | Often expected; confirm product pagination requirements |
 | Structural N+1 / loop heuristics | Confirm the loop really executes a database query each iteration |
+| `DAPPER_SELECT_STAR` / `DAPPER_STRING_CONCAT_SQL` | Confirm whether dynamic SQL is intentional, reviewed and parameterized |
+| `DAPPER_QUERY_IN_LOOP` | Confirm the loop body really issues a Dapper round-trip each iteration |
+| `AGGREGATION_AFTER_MATERIALIZATION` / `GROUPBY_AFTER_TOLIST` | Confirm whether in-memory aggregation is required after a bounded load |
 | Low `confidence` values | Prefer the rewrite plan over any auto-fix |
 | `safety: "review-required"` fixes | Never apply automatically |
 
@@ -435,8 +438,20 @@ Structural smells target query shape problems common in handlers, repositories a
 | `CORRELATED_SUBQUERY_IN_PROJECTION` | medium   | `Count`/`Sum`/`Any`/`Average` correlated inside `Select`              |
 | `IMPLICIT_CONVERSION_IN_FILTER`     | high     | `ToString`/`Parse`/`Convert` inside `Where`                           |
 | `FULL_ENTITY_MATERIALIZATION`       | medium   | `ToList`/`ToListAsync` without prior `Select` projection              |
+| `AGGREGATION_AFTER_MATERIALIZATION` | high     | `Sum`/`Count`/`Average`/`Min`/`Max`/`Aggregate` after `ToList`/`AsEnumerable` |
+| `GROUPBY_AFTER_TOLIST`              | medium   | `GroupBy` after `ToList`/`AsEnumerable` instead of server-side grouping |
 
-`analyze_query_batch` uses these rules (with combo bonuses) to prioritize the riskiest files first — N+1 patterns, cartesian products and implicit conversions score higher than tracking-only issues.
+### Dapper safety smells
+
+Prefer `provider: "dapper"` (or Dapper call markers such as `Query`/`Execute`/`QueryMultiple`) so these detectors run with the intended context.
+
+| Code                         | Severity | Description                                                                  |
+| ---------------------------- | -------- | ---------------------------------------------------------------------------- |
+| `DAPPER_SELECT_STAR`         | medium   | SQL text uses `SELECT *` instead of an explicit column list                  |
+| `DAPPER_QUERY_IN_LOOP`       | high     | `Query`/`Execute`/`QueryMultiple` (sync/async) inside `foreach`/`for`/`while` |
+| `DAPPER_STRING_CONCAT_SQL`   | high     | Interpolated/concatenated SQL instead of Dapper parameters                   |
+
+`analyze_query_batch` uses these rules (with combo bonuses) to prioritize the riskiest files first — N+1 patterns, cartesian products, Dapper loop/injection risks and implicit conversions score higher than tracking-only issues.
 
 Each smell may include `category`, `whyItMatters`, `rewritePlan`, and `safeAutoFix` in the analysis output.
 

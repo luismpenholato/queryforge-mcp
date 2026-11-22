@@ -25,7 +25,7 @@ export function looksLikeEfQuery(code: string): boolean {
 }
 
 export const DAPPER_CALL_PATTERN =
-  /\.(?:Query(?:Async|First(?:OrDefault)?(?:Async)?|Single(?:OrDefault)?(?:Async)?)?|Execute(?:Async|Scalar(?:Async)?)?)\s*(?:<[^>\n]*>)?\s*\(/;
+  /\.(?:Query(?:Async|First(?:OrDefault)?(?:Async)?|Single(?:OrDefault)?(?:Async)?|Multiple(?:Async)?)?|Execute(?:Async|Scalar(?:Async)?)?)\s*(?:<[^>\n]*>)?\s*\(/;
 
 export function looksLikeDapperQuery(code: string): boolean {
   return (

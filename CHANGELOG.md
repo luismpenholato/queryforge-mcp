@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Documented Dapper safety and aggregation rule codes in the README rules and false-positive guidance.
+- Extended `DAPPER_CALL_PATTERN` to detect `QueryMultiple` / `QueryMultipleAsync`.
+- Added edge-case unit coverage for `QueryMultipleAsync` in loops, `Average` after `AsEnumerable`, and concatenated SQL fragments.
+
+### Changed
+
+- Reused the shared Dapper call helper in `DAPPER_QUERY_IN_LOOP` so generic and `QueryMultiple` call shapes stay consistent.
+
 ## [0.8.0] - 2026-11-22
 
 ### Added

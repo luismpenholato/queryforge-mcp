@@ -17,6 +17,21 @@ describe('aggregationAfterMaterializationRule', () => {
     expect(result[0].code).toBe('AGGREGATION_AFTER_MATERIALIZATION');
   });
 
+  it('detects Average after AsEnumerable', () => {
+    const result = aggregationAfterMaterializationRule.analyze({
+      provider: 'ef-core',
+      code: `
+        var average = _context.Orders
+          .Where(o => o.CustomerId == customerId)
+          .AsEnumerable()
+          .Average(o => o.Total);
+      `
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0].code).toBe('AGGREGATION_AFTER_MATERIALIZATION');
+  });
+
   it('ignores server-side SumAsync', () => {
     const result = aggregationAfterMaterializationRule.analyze({
       provider: 'ef-core',

@@ -1,10 +1,7 @@
 import { QueryRule } from '../domain/query-rule.js';
 import { createReviewRequiredFix } from '../domain/query-smell.js';
-import { createSmell, hasDapperCallInLoop } from './rule-helpers.js';
+import { createSmell, DAPPER_CALL_PATTERN, hasDapperCallInLoop } from './rule-helpers.js';
 import { findAllPatternMatches } from './support/pattern-match.js';
-
-const DAPPER_CALL_PATTERN =
-  /\.(?:Query(?:Async|First(?:OrDefault)?(?:Async)?|Single(?:OrDefault)?(?:Async)?)?|Execute(?:Async|Scalar(?:Async)?)?)\s*\(/;
 
 export const dapperQueryInLoopRule: QueryRule = {
   code: 'DAPPER_QUERY_IN_LOOP',
@@ -22,7 +19,8 @@ export const dapperQueryInLoopRule: QueryRule = {
         title: 'Dapper call inside loop',
         severity: 'high',
         category: 'round-trips',
-        message: 'A Dapper Query/Execute call inside a loop may create an N+1 round-trip pattern.',
+        message:
+          'A Dapper Query/Execute/QueryMultiple call inside a loop may create an N+1 round-trip pattern.',
         whyItMatters:
           'Each iteration can open another database round-trip, which scales poorly as the input collection grows.',
         suggestion: 'Batch parameters and execute one query, or load required rows before the loop.',
