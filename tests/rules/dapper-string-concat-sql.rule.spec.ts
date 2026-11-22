@@ -15,6 +15,19 @@ describe('dapperStringConcatSqlRule', () => {
     expect(result[0].code).toBe('DAPPER_STRING_CONCAT_SQL');
   });
 
+  it('detects concatenated SQL fragments with SELECT', () => {
+    const result = dapperStringConcatSqlRule.analyze({
+      provider: 'dapper',
+      code: `
+        var sql = "SELECT Id, Name FROM Products WHERE Name = '" + productName + "'";
+        return connection.Query<Product>(sql);
+      `
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0].code).toBe('DAPPER_STRING_CONCAT_SQL');
+  });
+
   it('allows parameterized SQL', () => {
     const result = dapperStringConcatSqlRule.analyze({
       provider: 'dapper',
