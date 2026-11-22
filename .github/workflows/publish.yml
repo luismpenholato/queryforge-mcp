@@ -18,6 +18,7 @@ concurrency:
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   release:
@@ -41,25 +42,49 @@ jobs:
       - name: Validate release version
         run: node scripts/validate-release-version.mjs "${{ steps.version.outputs.tag }}"
 
-      - name: Check tag
-        id: tag
+      - name: Check existing release state
+        id: state
         shell: bash
         run: |
+          set -euo pipefail
           git fetch --tags --force
 
-          if git rev-parse "refs/tags/${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
+          VERSION="${{ steps.version.outputs.version }}"
+          TAG="${{ steps.version.outputs.tag }}"
+
+          if git rev-parse "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "tag_exists=true" >> "$GITHUB_OUTPUT"
           else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "tag_exists=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Stop when release already exists
-        if: steps.tag.outputs.exists == 'true'
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "gh_release_exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "gh_release_exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if npm view "@luispenholato/queryforge-mcp@$VERSION" version >/dev/null 2>&1; then
+            echo "npm_exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "npm_exists=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Stop when release is complete
+        if: >-
+          steps.state.outputs.npm_exists == 'true' &&
+          steps.state.outputs.tag_exists == 'true' &&
+          steps.state.outputs.gh_release_exists == 'true'
         run: |
-          echo "Release ${{ steps.version.outputs.tag }} already exists. Nothing to publish."
+          echo "Release ${{ steps.version.outputs.tag }} is already complete on npm, git tag and GitHub Releases."
 
       - name: Setup Node.js
-        if: steps.tag.outputs.exists == 'false'
+        if: >-
+          steps.state.outputs.npm_exists != 'true' ||
+          steps.state.outputs.tag_exists != 'true' ||
+          steps.state.outputs.gh_release_exists != 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -67,23 +92,38 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        if: steps.tag.outputs.exists == 'false'
+        if: >-
+          steps.state.outputs.npm_exists != 'true' ||
+          steps.state.outputs.tag_exists != 'true' ||
+          steps.state.outputs.gh_release_exists != 'true'
         run: npm ci
 
       - name: Run tests
-        if: steps.tag.outputs.exists == 'false'
+        if: >-
+          steps.state.outputs.npm_exists != 'true' ||
+          steps.state.outputs.tag_exists != 'true' ||
+          steps.state.outputs.gh_release_exists != 'true'
         run: npm test
 
       - name: Build package
-        if: steps.tag.outputs.exists == 'false'
+        if: >-
+          steps.state.outputs.npm_exists != 'true' ||
+          steps.state.outputs.tag_exists != 'true' ||
+          steps.state.outputs.gh_release_exists != 'true'
         run: npm run build
 
       - name: Validate public API
-        if: steps.tag.outputs.exists == 'false'
+        if: >-
+          steps.state.outputs.npm_exists != 'true' ||
+          steps.state.outputs.tag_exists != 'true' ||
+          steps.state.outputs.gh_release_exists != 'true'
         run: npm run validate:api
 
       - name: Pack npm tarball
-        if: steps.tag.outputs.exists == 'false'
+        if: >-
+          steps.state.outputs.npm_exists != 'true' ||
+          steps.state.outputs.tag_exists != 'true' ||
+          steps.state.outputs.gh_release_exists != 'true'
         id: pack
         shell: bash
         run: |
@@ -102,11 +142,46 @@ jobs:
           echo "file=$PACK_FILE" >> "$GITHUB_OUTPUT"
 
       - name: Validate npm tarball
-        if: steps.tag.outputs.exists == 'false'
+        if: >-
+          steps.state.outputs.npm_exists != 'true' ||
+          steps.state.outputs.tag_exists != 'true' ||
+          steps.state.outputs.gh_release_exists != 'true'
         run: node scripts/validate-package.mjs "${{ steps.pack.outputs.file }}"
 
+      - name: Ensure npm auth is configured
+        if: steps.state.outputs.npm_exists != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
+            echo "::error::NPM_TOKEN secret is missing or empty. Create a classic Automation token (or granular token with publish) for @luispenholato/queryforge-mcp and set repository secret NPM_TOKEN."
+            exit 1
+          fi
+
+          # Fail fast with a clearer message than npm's E404 for bad credentials.
+          AUTH_CHECK="$(curl -sS -o /tmp/npm-whoami.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${NODE_AUTH_TOKEN}" \
+            https://registry.npmjs.org/-/whoami || true)"
+
+          if [ "$AUTH_CHECK" != "200" ]; then
+            echo "::error::NPM_TOKEN is invalid or expired (whoami HTTP $AUTH_CHECK). Update the repository secret NPM_TOKEN and re-run this workflow."
+            cat /tmp/npm-whoami.json || true
+            exit 1
+          fi
+
+          WHOAMI="$(node -p "JSON.parse(require('fs').readFileSync('/tmp/npm-whoami.json','utf8')).username")"
+          echo "Authenticated to npm as: $WHOAMI"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish to npm
+        if: steps.state.outputs.npm_exists != 'true'
+        run: npm publish "${{ steps.pack.outputs.file }}" --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Create tag
-        if: steps.tag.outputs.exists == 'false'
+        if: steps.state.outputs.tag_exists != 'true'
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
@@ -116,18 +191,12 @@ jobs:
             "${{ github.sha }}"
           git push origin "${{ steps.version.outputs.tag }}"
 
-      - name: Publish to npm
-        if: steps.tag.outputs.exists == 'false'
-        run: npm publish "${{ steps.pack.outputs.file }}" --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       - name: Extract release notes
-        if: steps.tag.outputs.exists == 'false'
+        if: steps.state.outputs.gh_release_exists != 'true'
         run: node scripts/extract-changelog.mjs "${{ steps.version.outputs.tag }}" --output release-notes.md
 
       - name: Create GitHub Release
-        if: steps.tag.outputs.exists == 'false'
+        if: steps.state.outputs.gh_release_exists != 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
