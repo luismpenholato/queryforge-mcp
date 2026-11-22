@@ -1,6 +1,6 @@
 {
   "name": "@luispenholato/queryforge-mcp",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Local-first MCP server and TypeScript library for reviewing .NET LINQ, Entity Framework and Dapper query performance.",
   "type": "module",
   "main": "./dist/public-api.js",
@@ -63,13 +63,13 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "zod": "^3.25.0"
   },
   "devDependencies": {
-    "@types/node": "^24.0.0",
-    "tsx": "^4.20.0",
+    "@types/node": "^24.19.2",
+    "tsx": "^4.23.15",
     "typescript": "^5.8.0",
-    "vitest": "^3.2.0"
+    "vitest": "^3.2.7"
   }
 }
