@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-11-22
+
+### Added
+
+- Added Dapper safety rules: `DAPPER_SELECT_STAR`, `DAPPER_QUERY_IN_LOOP`, and `DAPPER_STRING_CONCAT_SQL`.
+- Added aggregation smell rules: `AGGREGATION_AFTER_MATERIALIZATION` and `GROUPBY_AFTER_TOLIST`.
+- Added Dapper helper detectors for query-like calls and loop-scoped Dapper round-trips.
+- Added unit coverage for the new Dapper and aggregation rules.
+
+### Changed
+
+- Extended batch analysis severity bonuses for the new Dapper and aggregation codes.
+- Updated pinned MCP installation examples and compatibility matrix to version `0.8.0`.
+- Advanced the roadmap past the Dapper safety / aggregation smells milestone.
+
+### Compatibility
+
+- Preserved all existing MCP tools and stdio server behavior.
+- Preserved the public programmatic API and npm package entry points.
+- Existing EF/LINQ rules keep their previous codes and severity semantics.
+
 ## [0.7.1] - 2026-07-12
 
 ### Added
@@ -267,6 +288,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation: README, examples, query smells, limitations, production usage, contributing
 - Test suite (unit + integration) with .NET fixtures
 
+[0.8.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.8.0
 [0.7.1]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.7.1
 [0.7.0]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.7.0
 [0.6.2]: https://github.com/luismpenholato/queryforge-mcp/releases/tag/v0.6.2

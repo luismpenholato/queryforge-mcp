@@ -10,7 +10,7 @@ import { registerSuggestIndexCandidatesTool } from './tools/suggest-index-candid
 export function createServer(): McpServer {
   const server = new McpServer({
     name: 'queryforge-mcp',
-    version: '0.7.1'
+    version: '0.8.0'
   });
 
   registerInspectProjectStackTool(server);
