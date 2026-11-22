@@ -87,22 +87,10 @@ jobs:
           steps.state.outputs.gh_release_exists != 'true'
         uses: actions/setup-node@v4
         with:
-          # Trusted publishing requires Node >= 22.14 and npm >= 11.5.1
+          # Trusted publishing requires Node >= 22.14; npm >= 11.5.1 is installed only before publish.
           node-version: 22
           registry-url: 'https://registry.npmjs.org/'
           cache: npm
-
-      - name: Ensure npm CLI supports trusted publishing
-        if: >-
-          steps.state.outputs.npm_exists != 'true' ||
-          steps.state.outputs.tag_exists != 'true' ||
-          steps.state.outputs.gh_release_exists != 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm install -g npm@latest
-          node -v
-          npm -v
 
       - name: Install dependencies
         if: >-
@@ -166,6 +154,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Trusted publishing needs npm >= 11.5.1. Upgrade only after tests/pack so
+          # suite expectations for `npm pack --json` stay stable on the bundled CLI.
+          npm install -g npm@11
+          node -v
+          npm -v
+
           # setup-node writes _authToken=${NODE_AUTH_TOKEN}; an empty value
           # blocks OIDC. Strip it so npm uses GitHub Actions trusted publishing.
           npmrc="${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}"
